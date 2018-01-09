@@ -379,6 +379,9 @@ bool two_robots::check_angle_limits(State q) {
 	if (fabs(q[5]) > q6minmax)
 		return false;
 
+	if (q.size() == 6)
+		return true;
+
 	if (fabs(q[6]) > q1minmax)
 		return false;
 	if (q[7] < q2min || q[7] > q2max)

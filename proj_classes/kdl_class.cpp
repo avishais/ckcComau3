@@ -10,10 +10,14 @@ kdl::kdl() {
 	l3z = 210; 
 	l4 = 1250; 
 	l5 = 116.5; 
-	lee = 400.7+22;
+	lee = 22;
 
-	initMatrix(Q, 4, 4);
-	Q = {{0,0,-1,250},{0,1,0,0},{1,0,0,300+450},{0,0,0,1}}; // Box transformation from one end-tip to the other
+	initMatrix(Q12, 4, 4);
+	initMatrix(Q13, 4, 4);
+	Q12 = {{cos(PI/3),-sin(PI/3),0,RD*cos(PI/3)+RD},{sin(PI/3),cos(PI/3),0,RD*sin(PI/3)},{0,0,1,0},{0,0,0,1}};
+	//Q12 = {{cos(PI/3*0),-sin(PI/3*0),0,RD*cos(PI/3*0)+RD},{sin(PI/3*0),cos(PI/3*0),0,RD*sin(PI/3*0)},{0,0,1,0},{0,0,0,1}};
+	
+	Q13 = {{cos(-PI/3),-sin(-PI/3),0,RD*cos(-PI/3)+RD},{sin(-PI/3),cos(-PI/3),0,RD*sin(-PI/3)},{0,0,1,0},{0,0,0,1}};
 
 	// Joint limits
 	q1minmax = deg2rad(180);
@@ -26,9 +30,16 @@ kdl::kdl() {
 	q6minmax = deg2rad(400);
 
 	initMatrix(T_fk, 4, 4);
+	initMatrix(T_fk13, 4, 4);
+	initMatrix(T_mult_temp,4, 4);	
 
-	initMatrix(T_pose, 4, 4);
-	T_pose = {{0, -1, 0, ROBOTS_DISTANCE_X}, {1, 0, 0, ROBOTS_DISTANCE_Y}, {0, 0, 1, ROBOT2_HEIGHT-ROBOT1_HEIGHT}, {0, 0, 0, 1}};
+	initMatrix(T_pose1, 4, 4);
+	T_pose1 = {{cos(ROBOT1_ROT), -sin(ROBOT1_ROT), 0, ROBOT1_X}, {sin(ROBOT1_ROT), cos(ROBOT1_ROT), 0, ROBOT1_Y}, {0, 0, 1, ROBOT1_Z}, {0, 0, 0, 1}};
+	initMatrix(T_pose12, 4, 4);
+	T_pose12 = {{cos(PI/3), -sin(PI/3), 0, ROBOT2_X-ROBOT1_X}, {sin(PI/3), cos(PI/3), 0, ROBOT2_Y-ROBOT1_Y}, {0, 0, 1, ROBOT2_Z-ROBOT1_Z}, {0, 0, 0, 1}};
+	//T_pose12 = {{cos(PI/3*0), -sin(PI/3*0), 0, 2*RR}, {sin(PI/3*0), cos(PI/3*0), 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}};
+	initMatrix(T_pose3, 4, 4);
+	T_pose3 = {{cos(ROBOT3_ROT), -sin(ROBOT3_ROT), 0, ROBOT3_X}, {sin(ROBOT3_ROT), cos(ROBOT3_ROT), 0, ROBOT3_Y}, {0, 0, 1, ROBOT3_Z}, {0, 0, 0, 1}};
 
 	//Definition of a kinematic chain & add segments to the chain
 	// Robot 1
@@ -39,9 +50,9 @@ kdl::kdl() {
 	chain.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(l4,0.0,0.0)))); // Link 4
 	chain.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l5,0.0,0.0)))); // Link 5
 	chain.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(lee,0.0,0.0)))); // EE
-	// Box
-	Rotation r( Q[0][0],Q[0][1],Q[0][2], Q[1][0],Q[1][1],Q[1][2], Q[2][0],Q[2][1],Q[2][2] );
-	chain.addSegment(Segment(Joint(Joint::None),Frame(Vector(Q[0][3],Q[1][3],Q[2][3])))); // Box translation
+	// Wheel
+	Rotation r( Q12[0][0],Q12[0][1],Q12[0][2], Q12[1][0],Q12[1][1],Q12[1][2], Q12[2][0],Q12[2][1],Q12[2][2] );
+	chain.addSegment(Segment(Joint(Joint::None),Frame(Vector(Q12[0][3],Q12[1][3],Q12[2][3])))); // Box translation
 	chain.addSegment(Segment(Joint(Joint::None),Frame(r))); // Box rotation
 	// Robot 2 - backwards
 	chain.addSegment(Segment(Joint(Joint::None),Frame(Vector(lee,0.0,0.0)))); // Box translation	
@@ -52,38 +63,88 @@ kdl::kdl() {
 	chain.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l1x,0.0,-l1z)))); // Link 1
 	chain.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(0.0,0.0,-b)))); // Base link
 
+	// Robot 1
+	Rotation r1( T_pose1[0][0],T_pose1[0][1],T_pose1[0][2], T_pose1[1][0],T_pose1[1][1],T_pose1[1][2], T_pose1[2][0],T_pose1[2][1],T_pose1[2][2] );
+	rob1.addSegment(Segment(Joint(Joint::None),Frame(Vector(T_pose1[0][3],T_pose1[1][3],T_pose1[2][3])))); // Robot translation
+	rob1.addSegment(Segment(Joint(Joint::None),Frame(r1))); // Robot rotation
+	rob1.addSegment(Segment(Joint(Joint::None),Frame(Vector(0.0,0.0,b)))); // Base link
+	rob1.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(l1x,0.0,l1z)))); // Link 1
+	rob1.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,l2)))); // Link 2
+	rob1.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l3x,0.0,l3z)))); // Link 3
+	rob1.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(l4,0.0,0.0)))); // Link 4
+	rob1.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l5,0.0,0.0)))); // Link 5
+	rob1.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(lee,0.0,0.0)))); // EE
+	// Wheel
+	Rotation r13( Q13[0][0],Q13[0][1],Q13[0][2], Q13[1][0],Q13[1][1],Q13[1][2], Q13[2][0],Q13[2][1],Q13[2][2] );
+	rob1.addSegment(Segment(Joint(Joint::None),Frame(Vector(Q13[0][3],Q13[1][3],Q13[2][3])))); // Wheel translation
+	rob1.addSegment(Segment(Joint(Joint::None),Frame(r13))); // Wheel rotation
+
 	// Robot 3
-	chain3.addSegment(Segment(Joint(Joint::None),Frame(Vector(0.0,0.0,b)))); // Base link
-	chain3.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(l1x,0.0,l1z)))); // Link 1
-	chain3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,l2)))); // Link 2
-	chain3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l3x,0.0,l3z)))); // Link 3
-	chain3.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(l4,0.0,0.0)))); // Link 4
-	chain3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l5,0.0,0.0)))); // Link 5
-	chain3.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(lee,0.0,0.0)))); // EE
+	Rotation r3( T_pose3[0][0],T_pose3[0][1],T_pose3[0][2], T_pose3[1][0],T_pose3[1][1],T_pose3[1][2], T_pose3[2][0],T_pose3[2][1],T_pose3[2][2] );
+	rob3.addSegment(Segment(Joint(Joint::None),Frame(Vector(T_pose3[0][3],T_pose3[1][3],T_pose3[2][3])))); // Robot translation
+	rob3.addSegment(Segment(Joint(Joint::None),Frame(r3))); // Robot rotation
+	rob3.addSegment(Segment(Joint(Joint::None),Frame(Vector(0.0,0.0,b)))); // Base link
+	rob3.addSegment(Segment(Joint(Joint::RotZ),Frame(Vector(l1x,0.0,l1z)))); // Link 1
+	rob3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(0.0,0.0,l2)))); // Link 2
+	rob3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l3x,0.0,l3z)))); // Link 3
+	rob3.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(l4,0.0,0.0)))); // Link 4
+	rob3.addSegment(Segment(Joint(Joint::RotY),Frame(Vector(l5,0.0,0.0)))); // Link 5
+	rob3.addSegment(Segment(Joint(Joint::RotX),Frame(Vector(lee,0.0,0.0)))); // EE
 
 
 	// Create joint array
 	unsigned int nj = chain.getNrOfJoints();
 	jointpositions = JntArray(nj);
 
-	// Joint limits for KDL
-	q_min = JntArray(nj);
-	q_max = JntArray(nj);
-	State q_min_vec = {-q1minmax, q2min, q3min, -q4minmax, -q5minmax, -q6minmax, -q6minmax, -q5minmax, -q4minmax, q3min, q2min, -q1minmax};
-	State q_max_vec = { q1minmax, q2max, q3max,  q4minmax,  q5minmax,  q6minmax,  q6minmax,  q5minmax,  q4minmax, q3max, q2max,  q1minmax};
-	for (int i = 0; i < nj; i++) {
-		q_min(i) = q_min_vec[i];
-		q_max(i) = q_max_vec[i];
-	}
-
-	initVector(q_solution, nj);
+	initVector(q_solution12, nj);
+	initVector(q_solution3, 6);
+	initVector(q_solution, 18);
 
 	cout << "Initiated chain with " << nj << " joints.\n";
 }
 
+// ----- Project -------
+
+bool kdl::GD(State q) {
+
+	State q12(12);
+	for (int i = 0; i < 12; i++)
+		q12[i] = q[i];
+	
+	if (!GD12(q12))
+		return false;
+	q12 = get_GD12_result();
+
+	// cout << "q12: "; printVector(q12);
+
+	State q1(6);
+	for (int i = 0; i < 6; i++) 
+		q1[i] = q12[i];
+	FK13(q1, 1);
+	Matrix T1 = get_FK13_solution();
+
+	State q3(6);
+	for (int i = 0; i < 6; i++) 
+		q3[i] = q[i+12];
+	// 	cout << "q3: "; printVector(q3);
+	Matrix T3 = MatricesMult(T1, {{-1, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}); // Returns the REQUIRED matrix of the rods tip at robot 1
+	if (!IK3(q3, T3))
+		return false;
+	q3 = get_IK3_solution();
+
+	for (int i = 0; i < 12; i++)
+		q_solution[i] = q12[i];
+	for (int i = 0; i < 6; i++)
+		q_solution[i+12] = q3[i];
+}	
+
+State kdl::get_GD_result() {
+	return q_solution;
+}
+
 // ----- Descend -------
 
-bool kdl::GD(State q_init_flip) {
+bool kdl::GD12(State q_init_flip) {
 
 	bool valid = true;
 
@@ -100,10 +161,12 @@ bool kdl::GD(State q_init_flip) {
 	IK_counter++;
 	clock_t begin = clock();
 
+	printMatrix(T_pose12);
+
 	for (int i = 0; i < 3; i++) {
-		cartposIK.p(i) = T_pose[i][3];
+		cartposIK.p(i) = T_pose12[i][3];
 		for (int j = 0; j < 3; j++)
-			cartposIK.M(i,j) = T_pose[i][j];
+			cartposIK.M(i,j) = T_pose12[i][j];
 	}
 
 	// KDL
@@ -140,86 +203,15 @@ bool kdl::GD(State q_init_flip) {
 		}
 
 		for (int i = 0; i < 6; i++)
-			q_solution[i] = q[i];
+			q_solution12[i] = q[i];
 		for (int i = 11, j = 6; i >= 6; i--,j++)
-			q_solution[j] = q[i];
-		q_solution[6] = -q_solution[6];
+			q_solution12[j] = q[i];
+		q_solution12[6] = -q_solution12[6];
 
-		if (include_joint_limits && !check_angle_limits(q_solution))
+		if (include_joint_limits && !check_angle_limits(q_solution12))
 			result = false;
 		else
 			result = true;
-	}
-
-	clock_t end = clock();
-	IK_time += double(end - begin) / CLOCKS_PER_SEC;
-
-	return result;
-}
-
-bool kdl::GD_JL(State q_init_flip) {
-
-	bool valid = true;
-
-	// Flip robot two vector
-	State q_init(q_init_flip.size());
-	for (int i = 0; i < 6; i++)
-		q_init[i] = q_init_flip[i];
-	for (int i = 11, j = 6; i >= 6; i--,j++)
-		q_init[j] = q_init_flip[i];
-	q_init[11] = -q_init[11];
-
-	State q(12);
-
-	IK_counter++;
-	clock_t begin = clock();
-
-	for (int i = 0; i < 3; i++) {
-		cartposIK.p(i) = T_pose[i][3];
-		for (int j = 0; j < 3; j++)
-			cartposIK.M(i,j) = T_pose[i][j];
-	}
-
-	// KDL
-	ChainFkSolverPos_recursive fksolver = ChainFkSolverPos_recursive(chain); 	// Create solver based on kinematic chain
-	ChainIkSolverVel_pinv iksolverv(chain);//Inverse velocity solver
-	ChainIkSolverPos_NR_JL iksolver(chain, q_min, q_max, fksolver,iksolverv,10000,1e-5);//Maximum 10000 iterations, stop at accuracy 1e-5
-
-	//Creation of jntarrays:
-	JntArray qKDL(chain.getNrOfJoints());
-	JntArray qInit(chain.getNrOfJoints());
-
-	for (int i = 0; i < chain.getNrOfJoints(); i++)
-		qInit(i) = q_init[i];
-
-	//Set destination frame
-	KDL::Frame F_dest = cartposIK;//Frame(Vector(1.0, 1.0, 0.0));
-	int ret = iksolver.CartToJnt(qInit, F_dest, qKDL);
-
-	bool result = false;
-	if (ret >= 0) {
-
-		for (int i = 0; i < 12; i++)
-			if (fabs(qKDL(i)) < 1e-4)
-				q[i] = 0;
-			else
-				q[i] = qKDL(i);
-
-		for (int i = 0; i < q.size(); i++) {
-			q[i] = fmod(q[i], 2*PI);
-			if (q[i]>PI)
-				q[i] -= 2*PI;
-			if (q[i]<-PI)
-				q[i] += 2*PI;
-		}
-
-		for (int i = 0; i < 6; i++)
-			q_solution[i] = q[i];
-		for (int i = 11, j = 6; i >= 6; i--,j++)
-			q_solution[j] = q[i];
-		q_solution[6] = -q_solution[6];
-
-		result = true;
 	}
 
 	clock_t end = clock();
@@ -243,6 +235,9 @@ bool kdl::check_angle_limits(State q) {
 	if (fabs(q[5]) > q6minmax)
 		return false;
 
+	if (q.size()==6)
+		return true;
+
 	if (fabs(q[6]) > q1minmax)
 		return false;
 	if (q[7] < q2min || q[7] > q2max)
@@ -259,8 +254,8 @@ bool kdl::check_angle_limits(State q) {
 	return true;
 }
 
-State kdl::get_GD_result() {
-	return q_solution;
+State kdl::get_GD12_result() {
+	return q_solution12;
 }
 
 // -----FK-------
@@ -297,11 +292,106 @@ void kdl::FK(State q) {
 	T_fk[3][3] = 1;
 }
 
+// FK for robot 1 (with wheel) or 3
+void kdl::FK13(State q, int robot_num) {
+
+	// Create solver based on kinematic chain
+	ChainFkSolverPos_recursive fksolver = robot_num == 1 ? ChainFkSolverPos_recursive(rob1) : ChainFkSolverPos_recursive(rob3);
+
+	for (int i = 0; i < q.size(); i++)
+		jointpositions(i) = q[i];
+
+	// Calculate forward position kinematics
+	bool kinematics_status;
+	kinematics_status = fksolver.JntToCart(jointpositions, cartposFK);
+
+	for (int i = 0; i < 3; i++) {
+		T_fk13[i][3] = cartposFK.p(i);
+		for (int j = 0; j < 3; j++) {
+			T_fk13[i][j] = cartposFK.M(i,j);
+			T_fk13[i][j] = fabs(T_fk13[i][j]) < 1e-4 ? 0 : T_fk13[i][j];
+		}
+	}
+	T_fk13[3][0] = T_fk13[3][1] = T_fk13[3][2] = 0;
+	T_fk13[3][3] = 1;
+}
+
 Matrix kdl::get_FK_solution() {
 
-	//printMatrix(T_fk_solution_1);
-
 	return T_fk;
+}
+
+Matrix kdl::get_FK13_solution() {
+
+	return T_fk13;
+}
+
+// ---------- IK of robot 3 -------------------
+
+bool kdl::IK3(State q3, Matrix T3) {
+
+	bool valid = true;
+	State q(q3.size());
+
+	IK_counter++;
+	clock_t begin = clock();
+
+	for (int i = 0; i < 3; i++) {
+		cartposIK.p(i) = T3[i][3];
+		for (int j = 0; j < 3; j++)
+			cartposIK.M(i,j) = T3[i][j];
+	}
+
+	// KDL
+	ChainFkSolverPos_recursive fksolver = ChainFkSolverPos_recursive(rob3); 	// Create solver based on kinematic chain
+	ChainIkSolverVel_pinv iksolverv(rob3);//Inverse velocity solver
+	ChainIkSolverPos_NR iksolver(rob3,fksolver,iksolverv,10000,1e-5);//Maximum 10000 iterations, stop at accuracy 1e-5
+
+	//Creation of jntarrays:
+	JntArray qKDL(rob3.getNrOfJoints());
+	JntArray qInit(rob3.getNrOfJoints());
+
+	for (int i = 0; i < rob3.getNrOfJoints(); i++)
+		qInit(i) = q3[i];
+
+	//Set destination frame
+	KDL::Frame F_dest = cartposIK;//Frame(Vector(1.0, 1.0, 0.0));
+	int ret = iksolver.CartToJnt(qInit, F_dest, qKDL);
+
+	bool result = false;
+	if (ret >= 0) {
+
+		for (int i = 0; i < q3.size(); i++)
+			if (fabs(qKDL(i)) < 1e-4)
+				q[i] = 0;
+			else
+				q[i] = qKDL(i);
+
+		for (int i = 0; i < q.size(); i++) {
+			q[i] = fmod(q[i], 2*PI);
+			if (q[i]>PI)
+				q[i] -= 2*PI;
+			if (q[i]<-PI)
+				q[i] += 2*PI;
+		}
+
+		for (int i = 0; i < 6; i++)
+			q_solution3[i] = q[i];
+
+		if (include_joint_limits && !check_angle_limits(q_solution3))
+			result = false;
+		else
+			result = true;
+	}
+
+	clock_t end = clock();
+	IK_time += double(end - begin) / CLOCKS_PER_SEC;
+
+	return result;
+}
+
+State kdl::get_IK3_solution() {
+	return q_solution3;
 }
 
 //------------------------
@@ -341,6 +431,18 @@ void kdl::clearMatrix(Matrix &M) {
 	for (unsigned i=0; i<M.size(); ++i)
 		for (unsigned j=0; j<M[i].size(); ++j)
 			M[i][j] = 0;;
+}
+
+// Matrix multiplication
+Matrix kdl::MatricesMult(Matrix M1, Matrix M2) {
+	clearMatrix(T_mult_temp);
+	for(unsigned i = 0; i < 4; ++i)
+		for(unsigned j = 0; j < 4; ++j)
+			for(int k = 0; k < 4; ++k)
+			{
+				T_mult_temp[i][j] += M1[i][k] * M2[k][j];
+			}
+	return T_mult_temp;
 }
 
 void kdl::log_q(State q) {

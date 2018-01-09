@@ -107,6 +107,13 @@ public:
 
 	Matrix Q12;
 	Matrix Q13;
+	Matrix getQ12() {
+		return Q12;
+	}
+	Matrix getQ13() {
+		return Q13;
+	}
+
 
 	State get_robots_properties() {
 		State E = {b, l1x, l1z, l2, l3x, l3z, l4, l5, lee};

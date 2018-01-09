@@ -851,9 +851,9 @@ void DisplayCB()
 	}
 
 	
-	// pm(R22, "R22");
-	// pv(T22, "T22");
-	// pv(T2_t2, "T2_t2");
+	// pm(R23, "R23");
+	// pv(T23, "T23");
+	// pv(T2_t3, "T2_t3");
 	// pm(R33, "R33");
 	// pv(T33, "T33");
 	// pm(R43, "R43");
@@ -868,8 +868,8 @@ void DisplayCB()
 	T23[1] =  0.0;
 	T23[2] =  0;
 
-	MxV(T73,R63,T23);
-	VpV(T73,T63,T73);
+	// MxV(T73,R63,T23);
+	// VpV(T73,T63,T73);
 
 	// if(visualizeRobots == 1){
 	// 	glColor3d(0.1,0.1,0.1);
@@ -880,8 +880,8 @@ void DisplayCB()
 	// 	glPopMatrix();
 	// }
 
-	// pm(R73, "R73");
-	// pv(T73, "T73");
+	// pm(R63, "R63");
+	// pv(T63, "T63");
 
 	// Environment I
 	if (withObs && env == 1) {

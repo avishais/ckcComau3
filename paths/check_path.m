@@ -3,12 +3,12 @@ clc
 
 % D = load('../robot_paths.txt');
 D = dlmread('./path.txt',' ',1,0);
-D = D(:,1:12);
+D = D(:,1:18);
 
 figure(1)
 clf
 hold on
-for i = 1:12
+for i = 1:18
     %     plot(D(:,1),D(:,i),'.-k');
     plot(rad2deg(D(:,i)),'.-k');
     

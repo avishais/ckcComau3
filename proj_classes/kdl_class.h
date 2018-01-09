@@ -38,10 +38,12 @@ private:
 	double q1minmax, q2min, q2max, q3min, q3max, q4minmax, q5minmax, q6minmax; // Joint limits
 
 	// IK parameters
-	State q_solution; // IK solution
+	State q_solution12; // IK 12 solution
+	State q_solution3; // IK 3 solution	
+	State q_solution; // Full solution	
 
 	// Temp variable for time efficiency
-	Matrix T_pose;
+	Matrix T_pose12, T_pose3, T_pose1, T_mult_temp;
 
 	double L; // Rod length
 
@@ -50,26 +52,30 @@ public:
 	kdl();
 
 	/** KDL declarations */
-	KDL::Chain chain, chain3;
+	KDL::Chain chain, rob1, rob3;
 	//ChainFkSolverPos_recursive fksolver;
 	KDL::JntArray jointpositions;
 	KDL::Frame cartposFK; // Create the frame that will contain the FK results
 	KDL::Frame cartposIK; // Create the frame that will contain the FK results
-	KDL::JntArray q_min; // Minimum joint limits
-	KDL::JntArray q_max; // Maximum joint limits
 
 	/** Newton-Raphson projection onto the constraint surface */
 	bool GD(State);
-	bool GD_JL(State); // With KDL joint limits
+	bool GD12(State);
 	State get_GD_result();
+	State get_GD12_result();
+	
+	bool IK3(State, Matrix);
+	State get_IK3_solution();		
 
 	/** Check the angles limits of the ABB - IK based on a constant trans. matrix */
 	bool check_angle_limits(State);
 
 	/**  Forward kinematics of the arm - only for validation */
 	void FK(State q);
+	void FK13(State q, int);
 	Matrix get_FK_solution();
-	Matrix T_fk, T_fk_temp;
+	Matrix get_FK13_solution();
+	Matrix T_fk, T_fk13, T_fk_temp;
 
 	/** Misc */
 	void initVector(State &, int);
@@ -78,13 +84,18 @@ public:
 	void printMatrix(Matrix);
 	void printVector(State);
 	void clearMatrix(Matrix &);
+	Matrix MatricesMult(Matrix, Matrix);		
 
 	/** Log conf. to path.txt file */
 	void log_q(State q);
 
-	Matrix Q;
-	Matrix getQ() {
-		return Q;
+	Matrix Q12;
+	Matrix Q13;
+	Matrix getQ12() {
+		return Q12;
+	}
+	Matrix getQ13() {
+		return Q13;
 	}
 
 	/** Returns ABB's link lengths */
@@ -93,8 +104,8 @@ public:
 		return P;
 	}
 
-	Matrix get_Tpose() {
-		return T_pose;
+	Matrix get_Tpose12() {
+		return T_pose12;
 	}
 
 	/** Performance parameters */
@@ -107,7 +118,7 @@ public:
 		return IK_time;
 	}
 
-	bool include_joint_limits = true;
+	bool include_joint_limits = false;
 };
 
 

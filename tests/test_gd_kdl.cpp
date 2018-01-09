@@ -21,7 +21,7 @@ int main() {
 
 
 	int N = 1;
-	State q(12,0), qp_kdl(12);
+	State q(18,0), qp_kdl(18);
 	double kdl_time = 0;
 
 	// K.FK(q);
@@ -31,8 +31,9 @@ int main() {
 
 	// for (int i = 0; i < N; i++) {
 
-		for (int j = 0; j < 12; j++)
-			q[j] = fRand(-3.14, 3.14);
+		for (int j = 0; j < 18; j++)
+			q[j] = 0;//fRand(-3.14, 3.14);
+		cout << "q: "; K.printVector(q);
 
 		// KDL
 		clock_t begin = clock();
@@ -44,10 +45,10 @@ int main() {
 
 		K.log_q(qp_kdl);
 
-		K.FK(qp_kdl);
-		Matrix T = K.get_FK_solution();
+		// K.FK(qp_kdl);
+		// Matrix T = K.get_FK_solution();
 	
-		K.printMatrix(T);
+		// K.printMatrix(T);
 	// }
 
 }
