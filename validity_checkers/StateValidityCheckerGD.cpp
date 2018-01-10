@@ -24,7 +24,7 @@ void StateValidityChecker::retrieveStateVector(const ob::State *state, State &q)
 	// cast the abstract state type to the type we expect
 	const ob::RealVectorStateSpace::StateType *Q = state->as<ob::RealVectorStateSpace::StateType>();
 
-	for (unsigned i = 0; i < 12; i++) {
+	for (unsigned i = 0; i < n; i++) {
 		q[i] = Q->values[i]; // Set state of robot1
 	}
 }
@@ -33,7 +33,7 @@ void StateValidityChecker::updateStateVector(const ob::State *state, State q) {
 	// cast the abstract state type to the type we expect
 	const ob::RealVectorStateSpace::StateType *Q = state->as<ob::RealVectorStateSpace::StateType>();
 
-	for (unsigned i = 0; i < 12; i++) {
+	for (unsigned i = 0; i < n; i++) {
 		Q->values[i] = q[i];
 	}
 }
@@ -42,18 +42,18 @@ void StateValidityChecker::printStateVector(const ob::State *state) {
 	// cast the abstract state type to the type we expect
 	const ob::RealVectorStateSpace::StateType *Q = state->as<ob::RealVectorStateSpace::StateType>();
 
-	State q(12);
+	State q(n);
 
-	for (unsigned i = 0; i < 12; i++) {
+	for (unsigned i = 0; i < n; i++) {
 		q[i] = Q->values[i]; // Set state of robot1
 	}
 	cout << "q: "; printVector(q);
 }
 
 State StateValidityChecker::sample_q() {
-	// c is a 12 dimensional vector composed of [q1 q2]
+	// c is a n dimensional vector composed of [q1 q2]
 
-	State q(12);
+	State q(n);
 
 	clock_t sT = clock();
 	while (1) {
@@ -80,7 +80,7 @@ State StateValidityChecker::sample_q() {
 
 bool StateValidityChecker::IKproject(const ob::State *state, bool includeObs) {
 
-	State q(12);
+	State q(n);
 	retrieveStateVector(state, q);
 
 	if (!IKproject(q, includeObs))
@@ -112,7 +112,7 @@ bool StateValidityChecker::isValid(const ob::State *state) {
 
 	isValid_counter++;
 
-	State q(12);
+	State q(n);
 	retrieveStateVector(state, q);
 
 	if (!GD(q))
@@ -130,7 +130,7 @@ bool StateValidityChecker::isValid(const ob::State *state) {
 
 bool StateValidityChecker::checkMotion(const ob::State *s1, const ob::State *s2)
 {
-	State q(12), q1(12), q2(12);
+	State q(n), q1(n), q2(n);
 	// We assume motion starts and ends in a valid configuration - due to projection
 	bool result = true;
 	//int nd = stateSpace_->validSegmentCount(s1, s2);
@@ -285,81 +285,6 @@ bool StateValidityChecker::reconstructRBS(State q1, State q2, Matrix &M, int ite
 	return true;
 }
 
-// ------------------------------------ v Sewing v -------------------------------------------
-
-// Validates a state by switching between the two possible active chains and computing the specific IK solution (input) and checking collision
-bool StateValidityChecker::isValidSew(State& q) {
-
-	isValid_counter++;
-
-	if (!GD(q))
-		return false;
-
-	q = get_GD_result();
-
-	if (withObs && collision_state(q))
-		return false;
-
-	return true;
-}
-
-bool StateValidityChecker::checkMotionSew(const ob::State *s1, const ob::State *s2)
-{
-	State q(12), q1(12), q2(12);
-	// We assume motion starts and ends in a valid configuration - due to projection
-	retrieveStateVector(s1, q1);
-	retrieveStateVector(s2, q2);
-
-	double d = normDistance(q1,q2);
-	while (d > dq) {
-		// interpolate
-		for (int i = 0; i < q1.size(); i++)
-			q[i] = q1[i] + dq/d * (q2[i]-q1[i]);
-
-		if (!isValidSew(q) || (d = normDistance(q1, q)) > RBS_tol)
-			return false;
-
-		q1 = q;
-	}
-
-}
-
-// *************** Reconstruct the Sewing Local-Connection - for post-processing and validation
-
-bool StateValidityChecker::reconstructSew(const ob::State *s1, const ob::State *s2, Matrix &Confs)
-{
-	State q1(n), q2(n);
-	retrieveStateVector(s1,q1);
-	retrieveStateVector(s2,q2);
-
-	return reconstructSew(q1, q2, Confs);
-}
-
-bool StateValidityChecker::reconstructSew(State q1, State q2, Matrix &M) {
-
-	State q(n);
-
-	M.push_back(q1);
-
-	double d = normDistance(q1,q2);
-
-	while (d > RBS_tol) {
-		// interpolate
-		for (int i = 0; i < q1.size(); i++)
-			q[i] = q1[i] + dq/d * (q2[i]-q1[i]);
-
-		if (!isValidSew(q) || (d = normDistance(q1, q)) > RBS_tol)
-			return false;
-
-		M.push_back(q);
-		q1 = q;
-	}
-
-	M.push_back(q2);
-
-	return true;
-}
-
 // ------------------------------------ MISC functions ---------------------------------------------------
 
 double StateValidityChecker::normDistance(State a1, State a2) {
@@ -370,7 +295,7 @@ double StateValidityChecker::normDistance(State a1, State a2) {
 }
 
 double StateValidityChecker::stateDistance(const ob::State *s1, const ob::State *s2) {
-	State q1(12), q2(12);
+	State q1(n), q2(n);
 	retrieveStateVector(s1, q1);
 	retrieveStateVector(s2, q2);
 
@@ -427,7 +352,7 @@ void StateValidityChecker::log_q(State q, bool New) {
 	else
 		myfile.open("../paths/path.txt", ios::app);
 
-	for (int j = 0; j<12; j++)
+	for (int j = 0; j<n; j++)
 		myfile << q[j] << " ";
 	myfile << endl;
 

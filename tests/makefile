@@ -26,16 +26,17 @@ CPPVRF = ${INC_VALIDITY}verification_class.cpp
 CPPGDKDL = ${INC_CLASSES}gd_class.cpp ${INC_CLASSES}kdl_class.cpp 
 CPPAPC = ${INC_CLASSES}apc_class.cpp ${INC_VALIDITY}StateValidityCheckerPCS.cpp
 CPPAPC2 = ${INC_CLASSES}apc_class.cpp 
-CPPGD = ${INC_CLASSES}kdl_class.cpp #${INC_VALIDITY}StateValidityCheckerGD.cpp
+CPPGD = ${INC_CLASSES}kdl_class.cpp ${INC_VALIDITY}StateValidityCheckerGD.cpp
 
 CPP_P_PCS = ${INC_RUN}plan_PCS.cpp ${INC_PLANNERS}CBiRRT_PCS.cpp
 
 all:
-	$(CXX) test_gd_kdl.cpp ${CPPGD} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
+	#$(CXX) test_gd_kdl.cpp ${CPPGD} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
 	#$(CXX) test_gd_kdl_svc.cpp ${CPPGD} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
 	#$(CXX) test_apc.cpp ${CPPAPC2} -o te $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
-	#$(CXX) tune_apc.cpp ${CPPAPC2} -o tu $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
+	$(CXX) tune_apc.cpp ${CPPAPC2} -o tu $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
 	#$(CXX) test_apc_svc_rbs.cpp ${CPPAPC} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
+	#$(CXX) test_gd_kdl_svc_rbs.cpp ${CPPGD} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
 
 
 

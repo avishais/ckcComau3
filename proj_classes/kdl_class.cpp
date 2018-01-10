@@ -15,8 +15,6 @@ kdl::kdl() {
 	initMatrix(Q12, 4, 4);
 	initMatrix(Q13, 4, 4);
 	Q12 = {{cos(PI/3),-sin(PI/3),0,RD*cos(PI/3)+RD},{sin(PI/3),cos(PI/3),0,RD*sin(PI/3)},{0,0,1,0},{0,0,0,1}};
-	//Q12 = {{cos(PI/3*0),-sin(PI/3*0),0,RD*cos(PI/3*0)+RD},{sin(PI/3*0),cos(PI/3*0),0,RD*sin(PI/3*0)},{0,0,1,0},{0,0,0,1}};
-	
 	Q13 = {{cos(-PI/3),-sin(-PI/3),0,RD*cos(-PI/3)+RD},{sin(-PI/3),cos(-PI/3),0,RD*sin(-PI/3)},{0,0,1,0},{0,0,0,1}};
 
 	// Joint limits
@@ -37,7 +35,6 @@ kdl::kdl() {
 	T_pose1 = {{cos(ROBOT1_ROT), -sin(ROBOT1_ROT), 0, ROBOT1_X}, {sin(ROBOT1_ROT), cos(ROBOT1_ROT), 0, ROBOT1_Y}, {0, 0, 1, ROBOT1_Z}, {0, 0, 0, 1}};
 	initMatrix(T_pose12, 4, 4);
 	T_pose12 = {{cos(PI/3), -sin(PI/3), 0, ROBOT2_X-ROBOT1_X}, {sin(PI/3), cos(PI/3), 0, ROBOT2_Y-ROBOT1_Y}, {0, 0, 1, ROBOT2_Z-ROBOT1_Z}, {0, 0, 0, 1}};
-	//T_pose12 = {{cos(PI/3*0), -sin(PI/3*0), 0, 2*RR}, {sin(PI/3*0), cos(PI/3*0), 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}};
 	initMatrix(T_pose3, 4, 4);
 	T_pose3 = {{cos(ROBOT3_ROT), -sin(ROBOT3_ROT), 0, ROBOT3_X}, {sin(ROBOT3_ROT), cos(ROBOT3_ROT), 0, ROBOT3_Y}, {0, 0, 1, ROBOT3_Z}, {0, 0, 0, 1}};
 
@@ -95,12 +92,14 @@ kdl::kdl() {
 	// Create joint array
 	unsigned int nj = chain.getNrOfJoints();
 	jointpositions = JntArray(nj);
+	unsigned int nj1 = rob1.getNrOfJoints();
+	jointpositions1 = JntArray(nj1);
 
 	initVector(q_solution12, nj);
 	initVector(q_solution3, 6);
 	initVector(q_solution, 18);
 
-	cout << "Initiated chain with " << nj << " joints.\n";
+	cout << "Initiated chain with " << nj+nj1 << " joints.\n";
 }
 
 // ----- Project -------
@@ -115,8 +114,6 @@ bool kdl::GD(State q) {
 		return false;
 	q12 = get_GD12_result();
 
-	// cout << "q12: "; printVector(q12);
-
 	State q1(6);
 	for (int i = 0; i < 6; i++) 
 		q1[i] = q12[i];
@@ -126,7 +123,6 @@ bool kdl::GD(State q) {
 	State q3(6);
 	for (int i = 0; i < 6; i++) 
 		q3[i] = q[i+12];
-	// 	cout << "q3: "; printVector(q3);
 	Matrix T3 = MatricesMult(T1, {{-1, 0, 0, 0}, {0, -1, 0, 0}, {0, 0, 1, 0}, {0, 0, 0, 1}}); // Returns the REQUIRED matrix of the rods tip at robot 1
 	if (!IK3(q3, T3))
 		return false;
@@ -136,6 +132,8 @@ bool kdl::GD(State q) {
 		q_solution[i] = q12[i];
 	for (int i = 0; i < 6; i++)
 		q_solution[i+12] = q3[i];
+
+	return true;
 }	
 
 State kdl::get_GD_result() {
@@ -160,8 +158,6 @@ bool kdl::GD12(State q_init_flip) {
 
 	IK_counter++;
 	clock_t begin = clock();
-
-	printMatrix(T_pose12);
 
 	for (int i = 0; i < 3; i++) {
 		cartposIK.p(i) = T_pose12[i][3];
@@ -294,16 +290,17 @@ void kdl::FK(State q) {
 
 // FK for robot 1 (with wheel) or 3
 void kdl::FK13(State q, int robot_num) {
+	//cout << "qfk: "; printVector(q);
 
 	// Create solver based on kinematic chain
 	ChainFkSolverPos_recursive fksolver = robot_num == 1 ? ChainFkSolverPos_recursive(rob1) : ChainFkSolverPos_recursive(rob3);
 
 	for (int i = 0; i < q.size(); i++)
-		jointpositions(i) = q[i];
+		jointpositions1(i) = q[i];
 
 	// Calculate forward position kinematics
 	bool kinematics_status;
-	kinematics_status = fksolver.JntToCart(jointpositions, cartposFK);
+	kinematics_status = fksolver.JntToCart(jointpositions1, cartposFK);
 
 	for (int i = 0; i < 3; i++) {
 		T_fk13[i][3] = cartposFK.p(i);

@@ -17,7 +17,4 @@ int main() {
 
 	svc.kdl::log_q(q);
 	
-
-
-
 }

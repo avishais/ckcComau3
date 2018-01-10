@@ -124,8 +124,8 @@ double ompl::geometric::CBiRRT::distanceBetweenTrees(TreeData &tree1, TreeData &
 	std::vector<Motion*> motions;
 	tree1->list(motions);
 
-	min_state1.resize(12);
-	min_state2.resize(12);
+	min_state1.resize(18);
+	min_state2.resize(18);
 
 	Motion *nmotion;
 	double minD = 1e10, curD;
@@ -146,7 +146,7 @@ State ompl::geometric::CBiRRT::random_q() {
 	base::State *state = si_->allocState();
 	sampler_->sampleUniform(state);
 
-	State q(12);
+	State q(18);
 	retrieveStateVector(state, q);
 
 	return q;
@@ -157,7 +157,7 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 // nmotion - nearest
 // mode = 1 -> extend, mode = 2 -> connect.
 {
-	State q(12);
+	State q(18);
 
 	bool reach = false;
 	growTree_reached = false;
@@ -239,7 +239,7 @@ ompl::base::PlannerStatus ompl::geometric::CBiRRT::solve(const base::PlannerTerm
 	base::State *start_node = si_->allocState();
 	setRange(Range); // Maximum local connection distance *** will need to profile this value
 
-	State q(12);
+	State q(18);
 
 	checkValidity();
 	startTime = clock();
@@ -576,7 +576,7 @@ void ompl::geometric::CBiRRT::save2file(vector<Motion*> mpath1, vector<Motion*> 
 
 	cout << "Logging path to files..." << endl;
 
-	State q(12);
+	State q(18);
 
 	{ // Log only milestones
 
@@ -588,14 +588,14 @@ void ompl::geometric::CBiRRT::save2file(vector<Motion*> mpath1, vector<Motion*> 
 
 		for (int i = mpath1.size() - 1 ; i >= 0 ; --i) {
 			retrieveStateVector(mpath1[i]->state, q);
-			for (int j = 0; j<12; j++) {
+			for (int j = 0; j<q.size(); j++) {
 				myfile << q[j] << " ";
 			}
 			myfile << endl;
 		}
 		for (unsigned int i = 0 ; i < mpath2.size() ; ++i) {
 			retrieveStateVector(mpath2[i]->state, q);
-			for (int j = 0; j<12; j++) {
+			for (int j = 0; j<q.size(); j++) {
 				myfile << q[j] << " ";
 			}
 			myfile << endl;

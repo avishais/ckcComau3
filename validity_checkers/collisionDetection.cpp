@@ -602,7 +602,7 @@ int collisionDetection::collision_state(State q1, State q2, State q3)
 	// if any parts in collision
 	for (int j = 0; j <= obs_max_index; ++j) {
 		if (res[j].CloserThanTolerance() == 1){
-			std::cout << "Collision in " << j << std::endl;
+			//std::cout << "Collision in " << j << std::endl;
 			return 1;
 		}
 	}

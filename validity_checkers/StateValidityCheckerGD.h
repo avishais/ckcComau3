@@ -29,12 +29,12 @@ public:
 	/** Constructors */
 	StateValidityChecker(const ob::SpaceInformationPtr &si, int env = 1) : mysi_(si.get())
 			{
-			q_prev.resize(12);
+			q_prev.resize(n);
 			initiate_log_parameters();
 			}; //Constructor
 	StateValidityChecker(int env = 1)
 			{
-			q_prev.resize(12);
+			q_prev.resize(n);
 			initiate_log_parameters();
 			}; //Constructor
 
@@ -54,14 +54,6 @@ public:
 	/** Reconstruct a local connection using RBS for post-processing  */
 	bool reconstructRBS(const ob::State *, const ob::State *, Matrix &);
 	bool reconstructRBS(State, State, Matrix &, int, int, int);
-
-	/** Sewing local connection check */
-	bool isValidSew(State&);
-	bool checkMotionSew(const ob::State *, const ob::State *);
-
-	/** Reconstruct a local connection using Sewing strategy for post-processing  */
-	bool reconstructSew(const ob::State *, const ob::State *, Matrix &);
-	bool reconstructSew(State, State, Matrix &);
 
 	/** Retrieve state from ob::State to vector<double> */
 	void retrieveStateVector(const ob::State *, State &);
@@ -165,10 +157,10 @@ private:
 	State q_prev;
 
 	double dq = 0.05; // Serial local connection resolution
-	bool withObs = true; // Include obstacles?
+	bool withObs = false; // Include obstacles?
 	double RBS_tol = 0.05; // RBS local connection resolution
 	int RBS_max_depth = 150; // Maximum RBS recursion depth
-	int n = 12; // Dimension of system
+	int n = 18; // Dimension of system
 };
 
 
