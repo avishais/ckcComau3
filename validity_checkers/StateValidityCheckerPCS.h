@@ -159,7 +159,7 @@ private:
 
 	double L;
 
-	bool withObs = false; // Include obstacles?
+	bool withObs = true; // Include obstacles?
 	double RBS_tol = 0.05; // RBS local connection resolution
 	int RBS_max_depth = 150; // Maximum RBS recursion depth
 

@@ -29,7 +29,7 @@ public:
 	PQP_Model base, link1, link2, link3, link4, link5, link6, EE, table;
 	PQP_Model base2, link12, link22, link32, link42, link52, link62, EE2;
 	PQP_Model base3, link13, link23, link33, link43, link53, link63, EE3;
-	PQP_Model b1, b2, wheel;
+	PQP_Model obs, obs1, wheel;
 
 	// Performance parameters
 	int collisionCheck_counter;
@@ -43,7 +43,7 @@ public:
 
 	int env;
 
-	bool withObs = false;
+	bool withObs = true;
 };
 
 #endif

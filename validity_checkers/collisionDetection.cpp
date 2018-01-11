@@ -551,47 +551,46 @@ int collisionDetection::collision_state(State q1, State q2, State q3)
 
 		PQP_REAL Mobs[3][3], Robs[3][3], Tobs[3];
 
-		// // Collision with chassis
-		// MRotZ(Robs,-3.1416/2);
+		// Collision with obs
+		MRotZ(Robs,0);
 
-		// Tobs[0] =  1500;
-		// Tobs[1] =  2100;
-		// Tobs[2] =  0;
+		Tobs[0] =  1000;
+		Tobs[1] =  0;
+		Tobs[2] =  1200;
 		
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R2,T2_t,&link2,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R3,T3,&link3,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R4,T4,&link4,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R5,T5,&link5,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R6,T6,&link6,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R6,T7,&EE,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R22,T2_t2,&link22,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R32,T32,&link32,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R42,T42,&link42,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R52,T52,&link52,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R62,T62,&link62,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,R62,T72,&EE2,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&chassis,Rwheel,Twheel,&wheel,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R4,T4,&link4,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R5,T5,&link5,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R6,T6,&link6,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R32,T32,&link32,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R42,T42,&link42,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R52,T52,&link52,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R62,T62,&link62,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R33,T33,&link33,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R43,T43,&link43,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R53,T53,&link53,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,R63,T63,&link63,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs,Rwheel,Twheel,&wheel,tolerance); i++;
 
-		// // Collision with conveyor
-		// MRotZ(Robs,0);
-
-		// Tobs[0] =  offsetX/2+100;
-		// Tobs[1] =  250;
-		// Tobs[2] =  0;
+		// Collision with obs
+		MRotZ(Robs,0);
 		
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R2,T2_t,&link2,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R3,T3,&link3,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R4,T4,&link4,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R5,T5,&link5,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R6,T6,&link6,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R6,T7,&EE,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R22,T2_t2,&link22,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R32,T32,&link32,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R42,T42,&link42,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R52,T52,&link52,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R62,T62,&link62,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,R62,T72,&EE2,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&conveyor,Rwheel,Twheel,&wheel,tolerance); i++;
+		Tobs[0] =  -150;
+		Tobs[1] =  550;
+		Tobs[2] =  0;
+		
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R3,T3,&link3,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R4,T4,&link4,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R5,T5,&link5,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R6,T6,&link6,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R32,T32,&link32,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R42,T42,&link42,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R52,T52,&link52,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R62,T62,&link62,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R33,T33,&link33,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R43,T43,&link43,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R53,T53,&link53,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R63,T63,&link63,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,Rwheel,Twheel,&wheel,tolerance); i++;
 
 		obs_max_index = i-1;
 	}
@@ -1146,12 +1145,12 @@ void collisionDetection::load_models(){
 
 		if (env == 1) {
 
-			// initialize b1
-			fp = fopen(CADLINK "b1.tris","r");
-			if (fp == NULL) { fprintf(stderr,"Couldn't open b1.tris\n"); exit(-1); }
+			// initialize obs
+			fp = fopen(CADLINK "obs.tris","r");
+			if (fp == NULL) { fprintf(stderr,"Couldn't open obs.tris\n"); exit(-1); }
 			fscanf(fp,"%d",&ntris);
 
-			collisionDetection::b1.BeginModel();
+			collisionDetection::obs.BeginModel();
 			for (i = 0; i < ntris; i++)
 			{
 				double p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z;
@@ -1161,17 +1160,17 @@ void collisionDetection::load_models(){
 				p1[0] = (PQP_REAL)p1x; p1[1] = (PQP_REAL)p1y; p1[2] = (PQP_REAL)p1z;
 				p2[0] = (PQP_REAL)p2x; p2[1] = (PQP_REAL)p2y; p2[2] = (PQP_REAL)p2z;
 				p3[0] = (PQP_REAL)p3x; p3[1] = (PQP_REAL)p3y; p3[2] = (PQP_REAL)p3z;
-				collisionDetection::b1.AddTri(p1,p2,p3,i);
+				collisionDetection::obs.AddTri(p1,p2,p3,i);
 			}
-			collisionDetection::b1.EndModel();
+			collisionDetection::obs.EndModel();
 			fclose(fp);
 
-			// initialize b2
-			fp = fopen(CADLINK "b2.tris","r");
-			if (fp == NULL) { fprintf(stderr,"Couldn't open b2.tris\n"); exit(-1); }
+			// initialize b1
+			fp = fopen(CADLINK "obs1.tris","r");
+			if (fp == NULL) { fprintf(stderr,"Couldn't open obs1tris\n"); exit(-1); }
 			fscanf(fp,"%d",&ntris);
 
-			collisionDetection::b2.BeginModel();
+			collisionDetection::obs1.BeginModel();
 			for (i = 0; i < ntris; i++)
 			{
 				double p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z;
@@ -1181,9 +1180,9 @@ void collisionDetection::load_models(){
 				p1[0] = (PQP_REAL)p1x; p1[1] = (PQP_REAL)p1y; p1[2] = (PQP_REAL)p1z;
 				p2[0] = (PQP_REAL)p2x; p2[1] = (PQP_REAL)p2y; p2[2] = (PQP_REAL)p2z;
 				p3[0] = (PQP_REAL)p3x; p3[1] = (PQP_REAL)p3y; p3[2] = (PQP_REAL)p3z;
-				collisionDetection::b2.AddTri(p1,p2,p3,i);
+				collisionDetection::obs1.AddTri(p1,p2,p3,i);
 			}
-			collisionDetection::b2.EndModel();
+			collisionDetection::obs1.EndModel();
 			fclose(fp);
 		}
 	}
