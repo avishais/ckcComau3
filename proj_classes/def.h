@@ -1,4 +1,4 @@
-#define RR 2200 
+#define RR 2600 
 #define RD 400 
 #define PI 3.1416
 

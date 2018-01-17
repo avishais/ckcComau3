@@ -275,6 +275,12 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 			// cout << "--------------------------------\n";
 			// printStateVector(motion->root);
 			// printStateVector(motion->state);
+			// {
+			// 	State qt(18);
+			// 	retrieveStateVector(motion->root, qt);
+			// 	if (fabs(qt[0]-0.01) < 1e-2 && fabs(qt[1]-0.66) < 1e-2)
+			// 		log_q(motion->state, false);
+			// }
 
 			nmotion = motion;
 

@@ -96,8 +96,8 @@ public:
 	void seperate_Vector(State, State &, State &, State &);
 
 	/** Log configuration to path file */
-	void log_q(ob::State *);
-	void log_q(State);
+	void log_q(ob::State *, bool = true);
+	void log_q(State, bool = true);
 
 	int get_valid_solution_index() {
 		return valid_solution_index;

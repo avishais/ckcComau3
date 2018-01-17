@@ -14,7 +14,7 @@
 
 #define ROBOT_COLOR 0.9020, 0.6078, 0.1490
 
-PQP_Model base, link1, link2, link3, link4, link5, link6, EE, table, obs, obs1, floor1, wheel;
+PQP_Model base, link1, link2, link3, link4, link5, link6, EE, table, obs, obs1, obs2, floor1, wheel;
 Model *base_to_draw, *link1_to_draw, *link2_to_draw, *link3_to_draw, \
 *link4_to_draw, *link5_to_draw, *link6_to_draw, *EE_to_draw, *b1_to_draw, *b2_to_draw, *wheel_to_draw;
 
@@ -26,7 +26,7 @@ PQP_Model base3, link13, link23, link33, link43, link53, link63, EE3;
 Model *base_to_draw3, *link1_to_draw3, *link2_to_draw3, *link3_to_draw3, \
 *link4_to_draw3, *link5_to_draw3, *link6_to_draw3, *EE_to_draw3;
 
-Model *rod_to_draw, *table_to_draw, *obs_to_draw, *obs1_to_draw, *obs3_to_draw, \
+Model *rod_to_draw, *table_to_draw, *obs_to_draw, *obs1_to_draw, *obs2_to_draw, \
 *room_to_draw, *floor_to_draw;
 
 PQP_REAL R0[3][3],R1[3][3],R2[3][3],T0[3],T1[3],T2[3];
@@ -892,9 +892,9 @@ void DisplayCB()
 		MRotZ(Mobs,0);
 		//MxM(R0,Mobs,Mobs);
 
-		Tobs[0] =  1000;
+		Tobs[0] =  0*600;
 		Tobs[1] =  0;
-		Tobs[2] =  1200;
+		Tobs[2] =  1300;
 
 		if(visualize == 1 && withObs) {
 			glColor3d(1.0,1.0,1.0);
@@ -905,12 +905,12 @@ void DisplayCB()
 			glPopMatrix();
 		}
 
-		// obs
+		// obs 1
 		MRotZ(Mobs,0);
 		//MxM(R0,Mobs,Mobs);
 
-		Tobs[0] =  -150;
-		Tobs[1] =  550;
+		Tobs[0] =  -1000;
+		Tobs[1] =  500;
 		Tobs[2] =  0;
 
 		if(visualize == 1 && withObs) {
@@ -919,6 +919,23 @@ void DisplayCB()
 			glPushMatrix();
 			glMultMatrixd(oglm);
 			obs1_to_draw->Draw();
+			glPopMatrix();
+		}
+
+		// obs 2
+		MRotZ(Mobs,0);
+		//MxM(R0,Mobs,Mobs);
+
+		Tobs[0] =  120;
+		Tobs[1] =  1070;
+		Tobs[2] =  0;
+
+		if(visualize == 1 && withObs) {
+			glColor3d(1.0,1.0,1.0);
+			MVtoOGL(oglm,Mobs,Tobs);
+			glPushMatrix();
+			glMultMatrixd(oglm);
+			obs2_to_draw->Draw();
 			glPopMatrix();
 		}
 
@@ -1598,6 +1615,28 @@ void load_models(){
 			obs1.EndModel();
 			fclose(fp);
 
+			// initialize obs2
+			obs2_to_draw = new Model("obs2.tris");
+			
+			fp = fopen("obs1.tris","r");
+			if (fp == NULL) { fprintf(stderr,"Couldn't open obs2.tris\n"); exit(-1); }
+			fscanf(fp,"%d",&ntris);
+
+			obs2.BeginModel();
+			for (i = 0; i < ntris; i++)
+			{
+				double p1x,p1y,p1z,p2x,p2y,p2z,p3x,p3y,p3z;
+				fscanf(fp,"%lf %lf %lf %lf %lf %lf %lf %lf %lf",
+						&p1x,&p1y,&p1z,&p2x,&p2y,&p2z,&p3x,&p3y,&p3z);
+				PQP_REAL p1[3],p2[3],p3[3];
+				p1[0] = (PQP_REAL)p1x; p1[1] = (PQP_REAL)p1y; p1[2] = (PQP_REAL)p1z;
+				p2[0] = (PQP_REAL)p2x; p2[1] = (PQP_REAL)p2y; p2[2] = (PQP_REAL)p2z;
+				p3[0] = (PQP_REAL)p3x; p3[1] = (PQP_REAL)p3y; p3[2] = (PQP_REAL)p3z;
+				obs2.AddTri(p1,p2,p3,i);
+			}
+			obs2.EndModel();
+			fclose(fp);
+
 		}
 	}
 
@@ -1608,10 +1647,11 @@ void execute_path(int k){
 
 	//std::cout << "Cong.: " << k << std::endl;
 
+	int i, nlines;
 	if(k == 0){
 		const char* robot_pfile = "../paths/path.txt";
 		FILE *fro, *fr;
-		int i, nlines;
+		
 
 		fr = fopen(robot_pfile,"r");
 		if (fr == NULL) { fprintf(stderr,"Couldn't open path.txt\n"); exit(-1); }
@@ -1682,8 +1722,10 @@ void execute_path(int k){
 	}
 
 	// Automatic update from file - will cause stack overflow
-	//step = 0;
-	//glutTimerFunc(10, execute_path, 0);
+	// if (nlines == 1) {
+		// step = 0;
+		// glutTimerFunc(10, execute_path, 0);
+	// }
 }
 
 

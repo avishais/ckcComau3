@@ -657,21 +657,25 @@ void StateValidityChecker::seperate_Vector(State q, State &q1, State &q2, State 
 	}
 }
 
-void StateValidityChecker::log_q(ob::State *s) {
+void StateValidityChecker::log_q(ob::State *s, bool New) {
 
 	State q(18);
 	retrieveStateVector(s, q);
 
-	log_q(q);
+	log_q(q, New);
 }
 
-void StateValidityChecker::log_q(State q) {
+void StateValidityChecker::log_q(State q, bool New) {
 
 	// Open a_path file
 	std::ofstream myfile;
-	myfile.open("./paths/path.txt");
 
-	myfile << 1 << endl;
+	if (New) {
+		myfile.open("./paths/path.txt");
+		myfile << 1 << endl;
+	}
+	else
+		myfile.open("./paths/path.txt", ios::app);
 
 	for (int j = 0; j < q.size(); j++)
 		myfile << q[j] << " ";

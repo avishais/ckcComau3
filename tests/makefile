@@ -35,7 +35,7 @@ all:
 	#$(CXX) test_gd_kdl_svc.cpp ${CPPGD} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
 	#$(CXX) test_apc.cpp ${CPPAPC2} -o te $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
 	$(CXX) tune_apc.cpp ${CPPAPC2} -o tu $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
-	#$(CXX) test_apc_svc_rbs.cpp ${CPPAPC} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
+	#$(CXX) test_apc_svc_ik.cpp ${CPPAPC} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
 	#$(CXX) test_gd_kdl_svc_rbs.cpp ${CPPGD} ${CPPPQP} -o gen $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11	
 
 
