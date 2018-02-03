@@ -136,8 +136,9 @@ namespace ompl
                 const base::State *root;
                 base::State       *state;
                 Motion            *parent;
-                int 			  ik_q1_active;
-                int 			  ik_q2_active;
+                State 			  ik_q1_active;
+                State 			  ik_q2_active;
+                State 			  ik_q3_active;
             };
 
             /** \brief A nearest-neighbor datastructure representing a tree of motions */

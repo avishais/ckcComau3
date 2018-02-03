@@ -572,45 +572,45 @@ int collisionDetection::collision_state(State q1, State q2, State q3)
 		PQP_Tolerance(&res[i],Robs,Tobs,&obs,Rwheel,Twheel,&wheel,tolerance); i++;
 
 		// // Collision with obs1
-		// MRotZ(Robs,0);
+		MRotZ(Robs,0);
 		
-		// Tobs[0] =  -650;
-		// Tobs[1] =  500;
-		// Tobs[2] =  0;
+		Tobs[0] =  -850;
+		Tobs[1] =  300;
+		Tobs[2] =  0;
 		
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R3,T3,&link3,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R4,T4,&link4,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R5,T5,&link5,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R6,T6,&link6,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R32,T32,&link32,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R42,T42,&link42,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R52,T52,&link52,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R62,T62,&link62,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R33,T33,&link33,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R43,T43,&link43,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R53,T53,&link53,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R63,T63,&link63,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs1,Rwheel,Twheel,&wheel,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R3,T3,&link3,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R4,T4,&link4,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R5,T5,&link5,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R6,T6,&link6,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R32,T32,&link32,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R42,T42,&link42,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R52,T52,&link52,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R62,T62,&link62,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R33,T33,&link33,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R43,T43,&link43,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R53,T53,&link53,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,R63,T63,&link63,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs1,Rwheel,Twheel,&wheel,tolerance); i++;
 
 		// // Collision with obs2
-		// MRotZ(Robs,0);
+		MRotZ(Robs,0);
 		
-		// Tobs[0] =  120;
-		// Tobs[1] =  1070;
-		// Tobs[2] =  0;
+		Tobs[0] =  120;
+		Tobs[1] =  1070;
+		Tobs[2] =  0;
 		
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R4,T4,&link4,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R5,T5,&link5,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R6,T6,&link6,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R22,T22,&link22,tolerance); i++;		
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R32,T32,&link32,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R42,T42,&link42,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R52,T52,&link52,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R62,T62,&link62,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R43,T43,&link43,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R53,T53,&link53,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R63,T63,&link63,tolerance); i++;
-		// PQP_Tolerance(&res[i],Robs,Tobs,&obs2,Rwheel,Twheel,&wheel,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R4,T4,&link4,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R5,T5,&link5,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R6,T6,&link6,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R22,T22,&link22,tolerance); i++;		
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R32,T32,&link32,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R42,T42,&link42,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R52,T52,&link52,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R62,T62,&link62,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R43,T43,&link43,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R53,T53,&link53,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,R63,T63,&link63,tolerance); i++;
+		PQP_Tolerance(&res[i],Robs,Tobs,&obs2,Rwheel,Twheel,&wheel,tolerance); i++;
 
 		obs_max_index = i-1;
 	}

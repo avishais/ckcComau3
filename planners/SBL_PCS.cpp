@@ -86,7 +86,8 @@ void ompl::geometric::SBL::freeGridMotions(Grid<MotionInfo> &grid)
 
 ompl::base::PlannerStatus ompl::geometric::SBL::solve(const base::PlannerTerminationCondition &ptc)
 {
-	State q1(6), q2(6), ik(2);
+	State q1(6), q2(6), q3(6);
+	Matrix ik = {{-1, -1},{-1, -1},{-1, -1}};
 
 	initiate_log_parameters();
 	setRange(Range); // Maximum local connection distance *** will need to profile this value
@@ -106,18 +107,22 @@ ompl::base::PlannerStatus ompl::geometric::SBL::solve(const base::PlannerTermina
 	while (const base::State *st = pis_.nextStart())
 	{
 		ik = identify_state_ik(st);
-		retrieveStateVector(st, q1, q2);
-		if (ik[0]==-1 || ik[1] == -1 || collision_state(q1, q2)) {
-			OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
-			return base::PlannerStatus::INVALID_START;
-		}
+		// retrieveStateVector(st, q1, q2, q3);
+		// if (ik[0]==-1 || ik[1] == -1 || collision_state(q1, q2)) {
+		// 	OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
+		// 	return base::PlannerStatus::INVALID_START;
+		// }
 
 		Motion *motion = new Motion(si_);
 		si_->copyState(motion->state, st);
 		motion->valid = true;
 		motion->root = motion->state;
+		motion->ik_q1_active.resize(2);
+		motion->ik_q2_active.resize(2);
+		motion->ik_q3_active.resize(2);
 		motion->ik_q1_active = ik[0];
 		motion->ik_q2_active = ik[1];
+		motion->ik_q3_active = ik[2];
 		motion->a_chain = 0;
 		addMotion(tStart_, motion);
 
@@ -160,17 +165,21 @@ ompl::base::PlannerStatus ompl::geometric::SBL::solve(const base::PlannerTermina
 			if (st)
 			{
 				ik = identify_state_ik(st);
-				retrieveStateVector(st, q1, q2);
-				if (ik[0]==-1 || ik[1] == -1 || collision_state(q1, q2)) {
-					OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
-					return base::PlannerStatus::INVALID_START;
-				}
+				// retrieveStateVector(st, q1, q2, q3);
+				// if (ik[0]==-1 || ik[1] == -1 || collision_state(q1, q2)) {
+				// 	OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
+				// 	return base::PlannerStatus::INVALID_START;
+				// }
 
 				Motion *motion = new Motion(si_);
 				si_->copyState(motion->state, st);
 				motion->root = motion->state;
+				motion->ik_q1_active.resize(2);
+				motion->ik_q2_active.resize(2);
+				motion->ik_q3_active.resize(2);
 				motion->ik_q1_active = ik[0];
 				motion->ik_q2_active = ik[1];
+				motion->ik_q3_active = ik[2];
 				motion->a_chain = 0;
 				motion->valid = true;
 				addMotion(tGoal_, motion);
@@ -190,48 +199,20 @@ ompl::base::PlannerStatus ompl::geometric::SBL::solve(const base::PlannerTermina
 			continue;
 
 		// Choose active chain
-		active_chain = rand() % 2; // 0 - (q1,a) is the active chain, 1 - (q2,a) is the active chain
-		ik = {-1, -1};
-
+		active_chain = rand() % 3; // 0 - (q1,a) is the active chain, 1 - (q2,a) is the active chain
+		ik = {{-1, -1},{-1, -1},{-1, -1}};
+		
 		// Project xstate (currently not on the manifold)
 		IK_counter++;
 		clock_t sT = clock();
-		retrieveStateVector(xstate, q1, q2);
-		if (!active_chain) {
-			if (!calc_specific_IK_solution_R1(q1, existing->ik_q1_active)) {
-				if (!calc_specific_IK_solution_R2(q2, existing->ik_q2_active)) {
-					sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
-					sampling_counter[1]++;
-					continue;
-				}
-				active_chain = !active_chain;
-				q1 = get_IK_solution_q1();
-				ik[1] =  existing->ik_q2_active;
-			}
-			else {
-				q2 = get_IK_solution_q2();
-				ik[0] =  existing->ik_q1_active;
-			}
-		}
-		else {
-			if (!calc_specific_IK_solution_R2(q2, existing->ik_q2_active)) {
-				if (!calc_specific_IK_solution_R1(q1, existing->ik_q1_active)) {
-					sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
-					sampling_counter[1]++;
-					continue;
-				}
-				active_chain = !active_chain;
-				q2 = get_IK_solution_q2();
-				ik[0] =  existing->ik_q1_active;
-			}
-			else {
-				q1 = get_IK_solution_q1();
-				ik[1] =  existing->ik_q2_active;
-			}
-		}
+		retrieveStateVector(xstate, q1, q2, q3);
+
+		if (!IKproject(q1, q2, q3, active_chain, {existing->ik_q1_active, existing->ik_q2_active, existing->ik_q3_active}))
+			continue;
+
 		IK_time += double(clock() - sT) / CLOCKS_PER_SEC;
 
-		if (collision_state(q1, q2)) {
+		if (collision_state(q1, q2, q3)) {
 			sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 			sampling_counter[1]++;
 			continue;
@@ -239,13 +220,17 @@ ompl::base::PlannerStatus ompl::geometric::SBL::solve(const base::PlannerTermina
 		sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 		sampling_counter[0]++;
 
-		updateStateVector(xstate, q1, q2);
+		updateStateVector(xstate, q1, q2, q3);
 		ik = identify_state_ik(xstate, ik);
 
 		/* create a motion */
 		Motion *motion = new Motion(si_);
+		motion->ik_q1_active.resize(2);
+		motion->ik_q2_active.resize(2);
+		motion->ik_q3_active.resize(2);
 		motion->ik_q1_active = ik[0];
 		motion->ik_q2_active = ik[1];
+		motion->ik_q3_active = ik[2];
 		si_->copyState(motion->state, xstate);
 		motion->parent = existing;
 		motion->root = existing->root;
@@ -311,8 +296,12 @@ bool ompl::geometric::SBL::checkSolution(bool start, TreeData &tree, TreeData &o
 			si_->copyState(connect->state, connectOther->state);
 			connect->parent = motion;
 			connect->root = motion->root;
+			connect->ik_q1_active.resize(2);
+			connect->ik_q2_active.resize(2);
+			connect->ik_q3_active.resize(2);
 			connect->ik_q1_active = connectOther->ik_q1_active;
 			connect->ik_q2_active = connectOther->ik_q2_active;
+			connect->ik_q3_active = connectOther->ik_q3_active;
 			motion->children.push_back(connect);
 			addMotion(tree, connect);
 
@@ -381,10 +370,12 @@ bool ompl::geometric::SBL::isPathValid(TreeData &tree, Motion *motion)
 			clock_t sT = clock();
 			local_connection_count++;
 			bool validMotion = false;
-			if (mpath[i]->parent->ik_q1_active == mpath[i]->ik_q1_active)
+			if (mpath[i]->parent->ik_q1_active[0] == mpath[i]->ik_q1_active[0] && mpath[i]->parent->ik_q1_active[1] == mpath[i]->ik_q1_active[1])
 				validMotion = checkMotionRBS(mpath[i]->parent->state, mpath[i]->state, 0, mpath[i]->ik_q1_active);
-			if (!validMotion && mpath[i]->parent->ik_q2_active == mpath[i]->ik_q2_active)
+			if (!validMotion && mpath[i]->parent->ik_q2_active[0] == mpath[i]->ik_q2_active[0] && mpath[i]->parent->ik_q2_active[1] == mpath[i]->ik_q2_active[1])
 				validMotion = checkMotionRBS(mpath[i]->parent->state, mpath[i]->state, 1, mpath[i]->ik_q2_active);
+			if (!validMotion && mpath[i]->parent->ik_q3_active[0] == mpath[i]->ik_q3_active[0] && mpath[i]->parent->ik_q3_active[1] == mpath[i]->ik_q3_active[1])
+				validMotion = checkMotionRBS(mpath[i]->parent->state, mpath[i]->state, 2, mpath[i]->ik_q3_active);
 			local_connection_time += double(clock() - sT) / CLOCKS_PER_SEC;
 
 			if (validMotion) {
@@ -534,43 +525,32 @@ void ompl::geometric::SBL::save2file(vector<Motion*> mpath1, vector<Motion*> mpa
 
 	cout << "Logging path to files..." << endl;
 
-	State q1(6), q2(6), ik(2);
+	State q1(6), q2(6), q3(6), q(18);
+	Matrix ik = {{-1, -1},{-1, -1},{-1, -1}};	
 	int active_chain, ik_sol;
 
 	{ // Log only milestones
 
 		// Open a_path file
-		std::ofstream myfile, ikfile;
+		std::ofstream myfile;
 		myfile.open("../paths/path_milestones.txt");
-		ikfile.open("../paths/ik_path.txt");
 
 		myfile << mpath1.size() + mpath2.size() << endl;
 
 		State temp;
 		for (int i = mpath1.size() - 1 ; i >= 0 ; --i) {
-			retrieveStateVector(mpath1[i]->state, q1, q2);
-			ikfile << mpath1[i]->a_chain << " " << mpath1[i]->ik_q1_active << " " << mpath1[i]->ik_q2_active << endl;
-			for (int j = 0; j<6; j++) {
-				myfile << q1[j] << " ";
-			}
-			for (int j = 0; j<6; j++) {
-				myfile << q2[j] << " ";
-			}
+			retrieveStateVector(mpath1[i]->state, q);
+			for (int j = 0; j<18; j++) 
+				myfile << q[j] << " ";
 			myfile << endl;
 		}
 		for (unsigned int i = 0 ; i < mpath2.size() ; ++i) {
-			retrieveStateVector(mpath2[i]->state, q1, q2);
-			ikfile << mpath2[i]->a_chain << " " << mpath2[i]->ik_q1_active << " " << mpath2[i]->ik_q2_active << endl;
-			for (int j = 0; j < 6; j++) {
-				myfile << q1[j] << " ";
-			}
-			for (int j = 0; j < 6; j++) {
-				myfile << q2[j] << " ";
-			}
+			retrieveStateVector(mpath2[i]->state, q);
+			for (int j = 0; j < 18; j++) 
+				myfile << q[j] << " ";
 			myfile << endl;
 		}
 		myfile.close();
-		ikfile.close();
 	}
 
 	{ // Reconstruct RBS
@@ -589,13 +569,9 @@ void ompl::geometric::SBL::save2file(vector<Motion*> mpath1, vector<Motion*> mpa
 		for (unsigned int i = 0 ; i < mpath2.size() ; ++i)
 			path.push_back(mpath2[i]);
 
-		retrieveStateVector(path[0]->state, q1, q2);
-		for (int j = 0; j < 6; j++) {
-			myfile << q1[j] << " ";
-		}
-		for (int j = 0; j < 6; j++) {
-			myfile << q2[j] << " ";
-		}
+		retrieveStateVector(path[0]->state, q);
+		for (int j = 0; j < 18; j++)
+			myfile << q[j] << " ";
 		myfile << endl;
 
 		int count = 1;
@@ -603,11 +579,15 @@ void ompl::geometric::SBL::save2file(vector<Motion*> mpath1, vector<Motion*> mpa
 
 			Matrix M;
 			bool valid = false;
-			if (path[i]->ik_q1_active == path[i-1]->ik_q1_active)
+			if (path[i]->ik_q1_active[0] == path[i-1]->ik_q1_active[0] && path[i]->ik_q1_active[1] == path[i-1]->ik_q1_active[1])
 				valid =  reconstructRBS(path[i-1]->state, path[i]->state, M, 0, path[i-1]->ik_q1_active);
-			if (!valid && path[i]->ik_q2_active == path[i-1]->ik_q2_active) {
+			if (!valid && path[i]->ik_q2_active[0] == path[i-1]->ik_q2_active[0] && path[i]->ik_q2_active[1] == path[i-1]->ik_q2_active[1]) {
 				M.clear();
 				valid =  reconstructRBS(path[i-1]->state, path[i]->state, M, 1, path[i-1]->ik_q2_active);
+			}
+			if (!valid && path[i]->ik_q3_active[0] == path[i-1]->ik_q3_active[0] && path[i]->ik_q3_active[1] == path[i-1]->ik_q3_active[1]) {
+				M.clear();
+				valid =  reconstructRBS(path[i-1]->state, path[i]->state, M, 2, path[i-1]->ik_q3_active);
 			}
 
 			if (!valid) {

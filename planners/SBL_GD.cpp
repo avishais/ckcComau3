@@ -457,7 +457,7 @@ void ompl::geometric::SBL::save2file(vector<Motion*> mpath1, vector<Motion*> mpa
 
 	cout << "Logging path to files..." << endl;
 
-	State q(12);
+	State q(18);
 
 	{ // Log only milestones
 
@@ -469,14 +469,14 @@ void ompl::geometric::SBL::save2file(vector<Motion*> mpath1, vector<Motion*> mpa
 
 		for (int i = mpath1.size() - 1 ; i >= 0 ; --i) {
 			retrieveStateVector(mpath1[i]->state, q);
-			for (int j = 0; j<12; j++) {
+			for (int j = 0; j<18; j++) {
 				myfile << q[j] << " ";
 			}
 			myfile << endl;
 		}
 		for (unsigned int i = 0 ; i < mpath2.size() ; ++i) {
 			retrieveStateVector(mpath2[i]->state, q);
-			for (int j = 0; j<12; j++) {
+			for (int j = 0; j<18; j++) {
 				myfile << q[j] << " ";
 			}
 			myfile << endl;

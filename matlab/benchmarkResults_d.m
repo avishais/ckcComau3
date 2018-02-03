@@ -5,20 +5,21 @@
 clear all
 clc
 
-d = 2.8;
 %%
-planners = {'BiRRT','RRT'};
+planners = {'BiRRT','RRT','SBL'};
 plannerType = planners{1};
 switch plannerType
     case 'BiRRT'
-        D{1} = load('Benchmark_BiRRT_PCS_rB.txt'); D{1} = D{1}(D{1}(:,2)==1,:); 
-        D{2} = load('Benchmark_BiRRT_GD_rB.txt'); D{2} = D{2}(D{2}(:,2)==1,:); 
+%         D{1} = load('Benchmark_BiRRT_PCS_rB.txt'); D{1} = D{1}(D{1}(:,2)==1,:); 
+%         D{2} = load('Benchmark_BiRRT_GD_rB.txt'); D{2} = D{2}(D{2}(:,2)==1,:);
+        D{1} = load('Benchmark_BiRRT_PCS_rB_wo.txt'); D{1} = D{1}(D{1}(:,2)==1,:); 
+        D{2} = load('Benchmark_BiRRT_GD_rB_wo.txt'); D{2} = D{2}(D{2}(:,2)==1,:); 
     case 'RRT'
-        D{1} = load('Benchmark_RRT_envI_w_rB_2.txt'); 
-        D{2} = load('Benchmark_RRT_envI_wo_rB.txt'); 
-        fprintf('Failures: \t%.1f, %.1f \n', 100-sum(D{1}(:,2))/size(D{1},1)*100, 100-sum(D{2}(:,2))/size(D{2},1)*100);
-        D{1} = D{1}(D{1}(:,2)==1,:); 
-        D{2} = D{2}(D{2}(:,2)==1,:); 
+        D{1} = D{1}(D{1}(:,2)==1,:);
+        D{2} = D{2}(D{2}(:,2)==1,:);
+    case 'SBL'
+        D{1} = load('Benchmark_SBL_PCS_rB.txt'); D{1} = D{1}(D{1}(:,2)==1,:);
+        D{2} = load('Benchmark_SBL_GD_rB.txt'); D{2} = D{2}(D{2}(:,2)==1,:);
 end
 
 %%
@@ -31,8 +32,8 @@ for k = 1:size(D,2)
     r{k} = sort(unique(D{k}(:,1)));
     for i = 1:length(r{k})
         M = D{k}(D{k}(:,1)==r{k}(i), 1:end);
-        t{k}(i) = mean(M(:,4))*1e3;
-        t_ste{k}(i) = 1e3*std(M(:,4))/sqrt(size(M,1));
+        t{k}(i) = mean(M(:,4));
+        t_ste{k}(i) = std(M(:,4))/sqrt(size(M,1));
     end
     
     [tmin(k), im(k)] = min(t{k});
@@ -45,7 +46,7 @@ errorbar(r{1},t{1},t_ste{1},'-k','linewidth',2);
 hold on
 errorbar(r{2},t{2},t_ste{2},'--k','linewidth',2);
 hold off
-ylabel('mean runtime [msec]');
+ylabel('mean runtime [sec]');
 xlabel('max. local-connection distance');
 legend('PCS','NR');
 % xlim([0 6]);
@@ -66,7 +67,7 @@ end
 
 clc
 disp('-----------------------------------');
-fprintf('         \t\tw/\tw/o\n');
+fprintf('         \t\tPCS\tNR\n');
 fprintf('Queries: \t\t%d\t%d\n', size(D{1},1), size(D{2},1));
 fprintf('d =      \t\t%.1f\t%.1f\n', F(1,1), F(1,2));
 fprintf('Avg. time (for d): \t%.2f\t%.2f \t(msec)\n', F(4,1)*1e3, F(4,2)*1e3);
@@ -81,12 +82,12 @@ fprintf('Loc.-con. time:    \t%.2f\t%.2f \t(msec)\n', F(12,1)*1e3, F(12,2)*1e3);
 fprintf('Loc.-con. count:   \t%.2f\t%.2f \t\n', F(13,1), F(13,2));
 fprintf('Loc.-con. success: \t%.2f\t%.2f \t(%%)\n', 100*F(14,1)/F(13,1), 100*F(14,2)/F(13,2));
 disp('----------- Projection ------------');
-fprintf('Proj. time:        \t%.2f\t%.2f \t(msec)\n', F(6,1)*1e3, F(6,2)*1e3);
+fprintf('Proj. time:        \t%.2f\t%.2f \t(sec)\n', F(6,1), F(6,2));
 fprintf('Proj. count:       \t%.2f\t%.2f \t\n', F(5,1), F(5,2));
 
 %%
 disp(' ');
-fprintf('Speed-up:      %.2f\n', d, tmin(2)/tmin(1));
+fprintf('Speed-up:      %.2f\n', tmin(2)/tmin(1));
 
 %%
 %%

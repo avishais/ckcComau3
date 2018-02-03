@@ -159,8 +159,9 @@ protected:
 		/** \brief The parent motion in the exploration tree */
 		Motion            *parent;
 
-        int 			  ik_q1_active;
-        int 			  ik_q2_active;
+        State 			  ik_q1_active;
+		State 			  ik_q2_active;
+		State 			  ik_q3_active;
         int 			  a_chain;
 
 	};

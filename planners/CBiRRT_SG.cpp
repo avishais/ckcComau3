@@ -121,11 +121,24 @@ void ompl::geometric::CBiRRT::clear()
 
 double ompl::geometric::CBiRRT::activeDistance(const Motion *a, const Motion *b) {
 
-	State qa(6), qa_dummy(6);
-	State qb(6), qb_dummy(6);
+	State qa(6), qa_a_dummy(6), qa_b_dummy(6);
+	State qb(6), qb_a_dummy(6), qb_b_dummy(6);
 
-	retrieveStateVector(a->state, qa, qa_dummy);
-	retrieveStateVector(b->state, qb, qb_dummy);
+	switch (active_chain) {
+		case 0:
+		retrieveStateVector(a->state, qa, qa_a_dummy, qa_b_dummy);
+		retrieveStateVector(b->state, qb, qb_a_dummy, qb_b_dummy);
+		break;
+		case 1:
+		retrieveStateVector(a->state, qa_a_dummy, qa, qa_b_dummy);
+		retrieveStateVector(b->state, qb_a_dummy, qb, qb_b_dummy);
+		break;
+		case 2:
+		retrieveStateVector(a->state, qa_a_dummy, qa_b_dummy, qa);
+		retrieveStateVector(b->state, qb_a_dummy, qb_b_dummy, qb);
+		break;
+		
+	}
 
 	double sum = 0;
 	for (int i=0; i < qa.size(); i++)
@@ -156,8 +169,8 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 // nmotion - nearest
 // mode = 1 -> extend, mode = 2 -> connect.
 {
-	State q1(6), q2(6), ik(2);
-	int ik_sol;
+	State q1(6), q2(6), q3(6), ik_sol(2);
+	Matrix ik = {{-1, -1},{-1, -1},{-1, -1}};
 
 	bool reach = false;
 	growTree_reached = false;
@@ -180,27 +193,24 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 			reach = true;
 
 		if (mode==1 || !reach) { // equivalent to (!(mode==2 && reach))
-			retrieveStateVector(dstate, q1, q2);
-			Matrix T = getQ();
+			retrieveStateVector(dstate, q1, q2, q3);
 
 			if (nmotion->ik_q1_active == -2)
-				ik_sol = rand() % 8;//rng_.uniformInt(0,7); // The nearest neighbor has a singularity, connect to it with a random IK solution
+				ik_sol = {rand() % 8, rand() % 8};//rng_.uniformInt(0,7); // The nearest neighbor has a singularity, connect to it with a random IK solution
 			else
 				ik_sol = nmotion->ik_q1_active;
 
 			IK_counter++;
 			clock_t sT = clock();
 			// Project dstate (currently not on the manifold)
-			if (!calc_specific_IK_solution_R1(T, q1, ik_sol)) {
+			if (!IKproject(q1, q2, q3, 0, {nmotion->ik_q1_active, nmotion->ik_q1_active, nmotion->ik_q1_active})) {
 				sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 				sampling_counter[1]++;
 				return nmotion;
 			}
-
-			q2 = get_IK_solution_q2();
 			IK_time += double(clock() - sT) / CLOCKS_PER_SEC;
 
-			if (collision_state(getPMatrix(), q1, q2)) {
+			if (collision_state(q1, q2, q3)) {
 				sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 				sampling_counter[1]++;
 				return nmotion;
@@ -208,30 +218,30 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 			sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 			sampling_counter[0]++;
 
-			updateStateVector(tgi.xstate, q1, q2);
+			updateStateVector(tgi.xstate, q1, q2, q3);
 			dstate = tgi.xstate;
 		}
 		else if (mode == 2) { // Target in tree
 			ik_sol = tmotion->ik_q1_active;
-			if (nmotion->ik_q1_active == -2 && ik_sol == -2) // Both singular
+			if ((nmotion->ik_q1_active[0] == -2 && ik_sol[0] == -2) || (nmotion->ik_q1_active[1] == -2 && ik_sol[1] == -2)) // Both singular
 				return nmotion;
 
-			if (nmotion->ik_q1_active != -2 && ik_sol != -2) {
-				if (nmotion->ik_q1_active != ik_sol)
+			if (nmotion->ik_q1_active[0] != -2 && ik_sol[0] != -2 && nmotion->ik_q1_active[1] != -2 && ik_sol[1] != -2) {
+				if ((nmotion->ik_q1_active[0] != ik_sol[0]) || (nmotion->ik_q1_active[1] != ik_sol[1]))
 					return nmotion;
 			}
 			else
-				if (ik_sol == -2)
+				if (ik_sol[0] == -2 || ik_sol[1] == -2)
 					ik_sol = nmotion->ik_q1_active;
 		}
 
 		if (mode==3 && reach) {
-			if (nmotion->ik_q1_active == -2)
+			if (nmotion->ik_q1_active[0] == -2 || nmotion->ik_q1_active[1] == -2)
 				return nmotion;
 			ik_sol = nmotion->ik_q1_active;
 		}
 
-		if (nmotion->ik_q1_active == -2 && ik_sol == -2) // Not necessary, but...
+		if ((nmotion->ik_q1_active[0] == -2 && ik_sol[0] == -2) || (nmotion->ik_q1_active[1] == -2 && ik_sol[1] == -2)) // Not necessary, but...
 			return nmotion;
 
 		// Check motion
@@ -240,7 +250,7 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 		local_connection_count++;
 		if (mode==3 && reach) // dstate is singular
 			validMotion = checkMotionRBS(nmotion->state, dstate, 2, 0, ik_sol);
-		else if (nmotion->ik_q1_active == -2) // nmotion is singular
+		else if (nmotion->ik_q1_active[0] == -2 || nmotion->ik_q1_active[1] == -2) // nmotion is singular
 			validMotion = checkMotionRBS(nmotion->state, dstate, 1, 0, ik_sol);
 		else
 			validMotion = checkMotionRBS(nmotion->state, dstate, 0, ik_sol);
@@ -252,6 +262,7 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 			local_connection_success_count++;
 			/* Update advanced motion */
 			Motion *motion = new Motion(si_);
+			motion->ik_q1_active.resize(2);			
 			motion->ik_q1_active = (mode == 3 && reach) ? -2 : ik_sol;
 			si_->copyState(motion->state, dstate);
 			motion->parent = nmotion;
@@ -281,8 +292,9 @@ ompl::base::PlannerStatus ompl::geometric::CBiRRT::solve(const base::PlannerTerm
 	setRange(Range);
 	base::State *start_node = si_->allocState();
 
-	State q1(6), q2(6), ik(2);
-
+	State q(18), q1(6), q2(6), q3(6);
+	Matrix ik = {{-1, -1},{-1, -1},{-1, -1}};	
+	
 	checkValidity();
 	startTime = clock();
 	base::GoalSampleableRegion *goal = dynamic_cast<base::GoalSampleableRegion*>(pdef_->getGoal().get());
@@ -296,14 +308,15 @@ ompl::base::PlannerStatus ompl::geometric::CBiRRT::solve(const base::PlannerTerm
 	while (const base::State *st = pis_.nextStart())
 	{
 		ik = identify_state_ik(st);
-		retrieveStateVector(st, q1, q2);
-		if (ik[0]==-1 || collision_state(getPMatrix(), q1, q2)) {
-			OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
-			return base::PlannerStatus::INVALID_START;
-		}
+		// retrieveStateVector(st, q);
+		// if (ik[0]==-1 || collision_state(getPMatrix(), q1, q2)) {
+		// 	OMPL_ERROR("%s: Start state not feasible!", getName().c_str());
+		// 	return base::PlannerStatus::INVALID_START;
+		// }
 		Motion *motion = new Motion(si_);
 		si_->copyState(motion->state, st);
 		motion->root = motion->state;
+		motion->ik_q1_active.resize(2);		
 		motion->ik_q1_active = ik[0];
 		tStart_->add(motion);
 
@@ -383,14 +396,15 @@ ompl::base::PlannerStatus ompl::geometric::CBiRRT::solve(const base::PlannerTerm
 			if (st)
 			{
 				ik = identify_state_ik(st);
-				retrieveStateVector(st, q1, q2);
-				if (ik[0]==-1 || collision_state(getPMatrix(), q1, q2)) {
-					OMPL_ERROR("%s: Goal state not feasible!", getName().c_str());
-					return base::PlannerStatus::INVALID_START;
-				}
+				// retrieveStateVector(st, q);
+				// if (ik[0]==-1 || collision_state(getPMatrix(), q1, q2)) {
+				// 	OMPL_ERROR("%s: Goal state not feasible!", getName().c_str());
+				// 	return base::PlannerStatus::INVALID_START;
+				// }
 				Motion *motion = new Motion(si_);
 				si_->copyState(motion->state, st);
 				motion->root = motion->state;
+				motion->ik_q1_active.resize(2);		
 				motion->ik_q1_active = ik[0];
 				tGoal_->add(motion);
 				PlanDistance = si_->distance(start_node, st);

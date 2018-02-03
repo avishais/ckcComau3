@@ -26,16 +26,16 @@ CPPAPC = ${INC_CLASSES}apc_class.cpp ${INC_VALIDITY}StateValidityCheckerPCS.cpp
 CPPGD = ${INC_CLASSES}kdl_class.cpp ${INC_VALIDITY}StateValidityCheckerGD.cpp
 CPPRSS = ${INC_CLASSES}apc_class.cpp ${INC_VALIDITY}StateValidityCheckerRSS.cpp
 
-CPP_P_PCS = ${INC_RUN}plan_PCS.cpp ${INC_PLANNERS}CBiRRT_PCS.cpp #${INC_PLANNERS}RRT_PCS.cpp ${INC_PLANNERS}SBL_PCS.cpp 
+CPP_P_PCS = ${INC_RUN}plan_PCS.cpp ${INC_PLANNERS}CBiRRT_PCS.cpp ${INC_PLANNERS}RRT_PCS.cpp ${INC_PLANNERS}SBL_PCS.cpp 
 CPP_P_GD = ${INC_RUN}plan_GD.cpp ${INC_PLANNERS}CBiRRT_GD.cpp ${INC_PLANNERS}RRT_GD.cpp ${INC_PLANNERS}SBL_GD.cpp 
-CPP_P_SG = ${INC_RUN}plan_SG.cpp ${INC_PLANNERS}CBiRRT_SG.cpp ${INC_PLANNERS}RRT_SG.cpp ${INC_PLANNERS}LazyRRT_SG.cpp ${INC_PLANNERS}SBL_SG.cpp #${INC_PLANNERS}PRM_SG.cpp 
+CPP_P_SG = ${INC_RUN}plan_SG.cpp ${INC_PLANNERS}CBiRRT_SG.cpp #${INC_PLANNERS}RRT_SG.cpp ${INC_PLANNERS}SBL_SG.cpp 
 
 all:
 	#$(CXX) ${CPP_P_PCS} ${CPPAPC} ${CPPPQP} -o ppcs $(CXXFLAGS) $(LDFLAGS) -DPCS -std=c++11
 
-	$(CXX) ${CPP_P_GD} ${CPPGD} ${CPPPQP} -o pgd $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
+	#$(CXX) ${CPP_P_GD} ${CPPGD} ${CPPPQP} -o pgd $(CXXFLAGS) $(LDFLAGS) -DPGD -std=c++11
 
-	#$(CXX) ${CPP_P_SG} ${CPPRSS} ${CPPPQP} -o psg $(CXXFLAGS) $(LDFLAGS) -DPCS -std=c++11
+	$(CXX) ${CPP_P_SG} ${CPPRSS} ${CPPPQP} -o psg $(CXXFLAGS) $(LDFLAGS) -DPCS -std=c++11
 
 
 

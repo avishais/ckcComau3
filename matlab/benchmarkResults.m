@@ -2,16 +2,16 @@
 clear all
 clc
 
-d = 0.2;
+d = 1;
 %%
 planners = {'BiRRT','RRT','SBL'};
-plannerType = planners{1};
+plannerType = planners{3};
 switch plannerType
     case 'BiRRT'
         D{1} = load('Benchmark_BiRRT_PCS.txt'); 
         D{2} = load('Benchmark_BiRRT_GD.txt');
-        D{1} = [d*ones(size(D{1},1),1) D{1}];
-        D{2} = [d*ones(size(D{2},1),1) D{2}];
+        D{1} = [1.0*ones(size(D{1},1),1) D{1}];
+        D{2} = [0.8*ones(size(D{2},1),1) D{2}];
         D{1} = D{1}(D{1}(:,2)==1,:); 
         D{2} = D{2}(D{2}(:,2)==1,:); 
     case 'RRT'
@@ -23,7 +23,10 @@ switch plannerType
         D{1} = D{1}(D{1}(:,2)==1,:); 
         D{2} = D{2}(D{2}(:,2)==1,:); 
     case 'SBL'
-
+        D{1} = load('Benchmark_SBL_PCS.txt'); D{1} = D{1}(D{1}(:,1)==1,:);
+        D{2} = load('Benchmark_SBL_PCS.txt'); D{2} = D{2}(D{2}(:,1)==1,:);
+        D{1} = [0.2*ones(size(D{1},1),1) D{1}];
+        D{2} = [d*ones(size(D{2},1),1) D{2}];
 end
 
 %%
@@ -44,20 +47,20 @@ disp('-----------------------------------');
 fprintf('         \t\tw/\tw/o\n');
 fprintf('Queries: \t\t%d\t%d\n', size(D{1},1), size(D{2},1));
 fprintf('d =      \t\t%.1f\t%.1f\n', F(1,1), F(1,2));
-fprintf('Avg. time (for d): \t%.2f\t%.2f \t(msec)\n', F(4,1)*1e3, F(4,2)*1e3);
-fprintf('Min. time (for d): \t%.2f\t%.2f \t(msec)\n', min(D{1}(:,4))*1e3, min(D{2}(:,4))*1e3);
+fprintf('Avg. time (for d): \t%.2f\t%.2f \t(sec)\n', F(4,1), F(4,2));
+fprintf('Min. time (for d): \t%.2f\t%.2f \t(sec)\n', min(D{1}(:,4)), min(D{2}(:,4)));
 fprintf('Nodes in path:     \t%.1f\t%.1f\n', F(10,1), F(10,2));
 fprintf('Nodes in trees:    \t%.1f\t%.1f\n', F(11,1), F(11,2));
 disp('------------ Sampling -------------');
-fprintf('Sampling time:    \t%.2f\t%.2f \t(msec)\n', F(15,1)*1e3, F(15,2)*1e3);
+fprintf('Sampling time:    \t%.2f\t%.2f \t(sec)\n', F(15,1), F(15,2));
 fprintf('Sampling count: \t%.1f\t%.1f \t(%%)\n', F(16,1)+F(17,1), F(16,2)+F(17,2));
 fprintf('Sampling success: \t%.2f\t%.2f \t(%%)\n', 100*F(16,1)/(F(16,1)+F(17,1)), 100*F(16,2)/(F(16,2)+F(17,2)));
 disp('------------ loc.-con. ------------');
-fprintf('Loc.-con. time:    \t%.2f\t%.2f \t(msec)\n', F(12,1)*1e3, F(12,2)*1e3);
+fprintf('Loc.-con. time:    \t%.2f\t%.2f \t(sec)\n', F(12,1), F(12,2));
 fprintf('Loc.-con. count:   \t%.2f\t%.2f \t\n', F(13,1), F(13,2));
 fprintf('Loc.-con. success: \t%.2f\t%.2f \t(%%)\n', 100*F(14,1)/F(13,1), 100*F(14,2)/F(13,2));
 disp('----------- Projection ------------');
-fprintf('Proj. time:        \t%.2f\t%.2f \t(msec)\n', F(6,1)*1e3, F(6,2)*1e3);
+fprintf('Proj. time:        \t%.2f\t%.2f \t(sec)\n', F(6,1), F(6,2));
 fprintf('Proj. count:       \t%.2f\t%.2f \t\n', F(5,1), F(5,2));
 
 %%

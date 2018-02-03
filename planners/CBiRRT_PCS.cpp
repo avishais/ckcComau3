@@ -211,7 +211,7 @@ ompl::geometric::CBiRRT::Motion* ompl::geometric::CBiRRT::growTree(TreeData &tre
 			}
 			IK_time += double(clock() - sT) / CLOCKS_PER_SEC;
 
-			if (collision_state(q1, q2,q3)) {
+			if (collision_state(q1, q2, q3)) {
 				sampling_time += double(clock() - sT) / CLOCKS_PER_SEC;
 				sampling_counter[1]++;
 				return nmotion;
@@ -625,27 +625,23 @@ void ompl::geometric::CBiRRT::save2file(vector<Motion*> mpath1, vector<Motion*> 
 		// Open a_path file
 		std::ofstream myfile, ikfile;
 		myfile.open("../paths/path_milestones.txt");
-		// ikfile.open("../paths/ik_path.txt");
 
 		myfile << mpath1.size() + mpath2.size() << endl;
 
 		State temp;
 		for (int i = mpath1.size() - 1 ; i >= 0 ; --i) {
 			retrieveStateVector(mpath1[i]->state, q);
-			//ikfile << mpath1[i]->a_chain << " " << mpath1[i]->ik_q1_active << " " << mpath1[i]->ik_q2_active << endl;
 			for (int j = 0; j<18; j++)
 				myfile << q[j] << " ";
 			myfile << endl;
 		}
 		for (unsigned int i = 0 ; i < mpath2.size() ; ++i) {
 			retrieveStateVector(mpath2[i]->state, q);
-			//ikfile << mpath2[i]->a_chain << " " << mpath2[i]->ik_q1_active << " " << mpath2[i]->ik_q2_active << endl;
 			for (int j = 0; j < 18; j++) 
 				myfile << q[j] << " ";
 			myfile << endl;
 		}
 		myfile.close();
-		// ikfile.close();
 	}
 
 	{ // Reconstruct RBS

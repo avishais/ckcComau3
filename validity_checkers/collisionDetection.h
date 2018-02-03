@@ -43,7 +43,7 @@ public:
 
 	int env;
 
-	bool withObs = false;
+	bool withObs = true;
 };
 
 #endif

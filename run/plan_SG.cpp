@@ -52,26 +52,16 @@ ob::PlannerPtr plan_C::allocatePlanner(ob::SpaceInformationPtr si, plannerType p
 		return std::make_shared<og::CBiRRT>(si, maxStep, env);
 		break;
 	}
-	case PLANNER_RRT:
-	{
-		return std::make_shared<og::RRT>(si, maxStep, env);
-		break;
-	}
-	case PLANNER_LAZYRRT:
-	{
-		return std::make_shared<og::LazyRRT>(si, maxStep, env);
-		break;
-	}
-	/*case PLANNER_PRM:
-	{
-		return std::make_shared<og::PRM>(si, env);
-		break;
-	}*/
-	case PLANNER_SBL:
-	{
-		return std::make_shared<og::SBL>(si, maxStep, env);
-		break;
-	}
+	// case PLANNER_RRT:
+	// {
+	// 	return std::make_shared<og::RRT>(si, maxStep, env);
+	// 	break;
+	// }
+	// case PLANNER_SBL:
+	// {
+	// 	return std::make_shared<og::SBL>(si, maxStep, env);
+	// 	break;
+	// }
 	default:
 	{
 		OMPL_ERROR("Planner-type enum is not implemented in allocation function.");
@@ -84,34 +74,46 @@ ob::PlannerPtr plan_C::allocatePlanner(ob::SpaceInformationPtr si, plannerType p
 void plan_C::plan(State c_start, State c_goal, double runtime, plannerType ptype, double max_step) {
 
 	// construct the state space we are planning inz
-	ob::StateSpacePtr Q(new ob::RealVectorStateSpace(12)); // Angles of Robot 1 & 2 - R^12
+	ob::StateSpacePtr Q(new ob::RealVectorStateSpace(18)); // Angles of Robot 1 & 2 - R^18
 
-	// set the bounds for the Q=R^12 part of 'Cspace'
-	ob::RealVectorBounds Qbounds(12);
-	Qbounds.setLow(0, -2.88); // Robot 1
-	Qbounds.setHigh(0, 2.88);
-	Qbounds.setLow(1, -1.919);
-	Qbounds.setHigh(1, 1.919);
-	Qbounds.setLow(2, -1.919);
-	Qbounds.setHigh(2, 1.22);
-	Qbounds.setLow(3, -2.79);
-	Qbounds.setHigh(3, 2.79);
-	Qbounds.setLow(4, -2.09);
-	Qbounds.setHigh(4, 2.09);
-	Qbounds.setLow(5, -PI_);// -6.98); // Should be -6.98 but currently the IK won't allow it - this impacts the sampler
-	Qbounds.setHigh(5, PI_);// 6.98); // Should be 6.98 but currently the IK won't allow it
-	Qbounds.setLow(6, -2.88); // Robot 2
-	Qbounds.setHigh(6, 2.88);
-	Qbounds.setLow(7, -1.919);
-	Qbounds.setHigh(7, 1.919);
-	Qbounds.setLow(8, -1.919);
-	Qbounds.setHigh(8, 1.22);
-	Qbounds.setLow(9, -2.79);
-	Qbounds.setHigh(9, 2.79);
-	Qbounds.setLow(10, -2.09);
-	Qbounds.setHigh(10, 2.09);
-	Qbounds.setLow(11, -PI_);// -6.98); // Should be -6.98 but currently the IK won't allow it
-	Qbounds.setHigh(11, PI_);// 6.98); // Should be 6.98 but currently the IK won't allow it
+	// set the bounds for the Q=R^18 part of 'Cspace'
+	ob::RealVectorBounds Qbounds(18);
+	Qbounds.setLow(0, -PI_); // Robot 1
+	Qbounds.setHigh(0, PI_);
+	Qbounds.setLow(1, -1.0472);
+	Qbounds.setHigh(1, 2.1871);
+	Qbounds.setLow(2, -PI_/2);
+	Qbounds.setHigh(2, 1.3090);
+	Qbounds.setLow(3, -PI_);
+	Qbounds.setHigh(3, PI_);
+	Qbounds.setLow(4, -2.0944);
+	Qbounds.setHigh(4, 2.0944);
+	Qbounds.setLow(5, -PI_);
+	Qbounds.setHigh(5, PI_);
+	Qbounds.setLow(6, -PI_); // Robot 2
+	Qbounds.setHigh(6, PI_);
+	Qbounds.setLow(7, -1.0472);
+	Qbounds.setHigh(7, 2.1871);
+	Qbounds.setLow(8, -PI_/2);
+	Qbounds.setHigh(8, 1.3090);
+	Qbounds.setLow(9, -PI_);
+	Qbounds.setHigh(9, PI_);
+	Qbounds.setLow(10, -2.0944);
+	Qbounds.setHigh(10, 2.0944);
+	Qbounds.setLow(11, -PI_);
+	Qbounds.setHigh(11, PI_);
+	Qbounds.setLow(12, -PI_); // Robot 3
+	Qbounds.setHigh(12, PI_);
+	Qbounds.setLow(13, -1.0472);
+	Qbounds.setHigh(13, 2.1871);
+	Qbounds.setLow(14, -PI_/2);
+	Qbounds.setHigh(14, 1.3090);
+	Qbounds.setLow(15, -PI_);
+	Qbounds.setHigh(15, PI_);
+	Qbounds.setLow(16, -2.0944);
+	Qbounds.setHigh(16, 2.0944);
+	Qbounds.setLow(17, -PI_);
+	Qbounds.setHigh(17, PI_);
 
 	// set the bound for the compound space
 	Q->as<ob::RealVectorStateSpace>()->setBounds(Qbounds);
@@ -129,13 +131,13 @@ void plan_C::plan(State c_start, State c_goal, double runtime, plannerType ptype
 
 	// create start state
 	ob::ScopedState<ob::RealVectorStateSpace> start(Cspace);
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 18; i++) {
 		start->as<ob::RealVectorStateSpace::StateType>()->values[i] = c_start[i]; // Access the first component of the start a-state
 	}
 
 	// create goal state
 	ob::ScopedState<ob::RealVectorStateSpace> goal(Cspace);
-	for (int i = 0; i < 12; i++) {
+	for (int i = 0; i < 18; i++) {
 		goal->as<ob::RealVectorStateSpace::StateType>()->values[i] = c_goal[i]; // Access the first component of the goal a-state
 	}
 
@@ -218,11 +220,13 @@ int main(int argn, char ** args) {
 	if (argn == 1) {
 		runtime = 1; // sec
 		ptype = PLANNER_BIRRT;
+		plannerName = "BiRRT";		
 		env = 1;
 	}
 	else if (argn == 2) {
 		runtime = atof(args[1]);
 		ptype = PLANNER_BIRRT;
+		plannerName = "BiRRT";		
 		env = 1;
 	}
 	else if (argn > 2) {
@@ -237,14 +241,6 @@ int main(int argn, char ** args) {
 			plannerName = "RRT";
 			break;
 		case 3 :
-			ptype = PLANNER_LAZYRRT;
-			plannerName = "LazyRRT";
-			break;
-		case 4 :
-			ptype = PLANNER_PRM;
-			plannerName = "PRM";
-			break;
-		case 5 :
 			ptype = PLANNER_SBL;
 			plannerName = "SBL";
 			break;
@@ -264,18 +260,15 @@ int main(int argn, char ** args) {
 
 	State c_start, c_goal;
 	if (env == 1) {
-		c_start = {0.5236, 1.7453, -1.8326, -1.4835,	1.5708,	0, 1.004278, 0.2729, 0.9486, -1.15011, 1.81001, -1.97739};
-		//State c_goal = {0.5236, 0.34907, 0.69813, -1.3963, 1.5708, 0, -2.432, -1.4148, -1.7061, -1.6701, -1.905, 1.0015}; // Robot 2 backfilp - Elbow down
-		c_goal = {0.5236, 0.34907, 0.69813, -1.3963, 1.5708, 0, 0.7096, 1.8032, -1.7061, -1.6286, 1.9143, -2.0155}; // Robot 2 no backflip - Elbow down
+		c_start = {0.01, 0.66, -0.92, 0, 0.29, 0, 0.26018, -0.106253, 0.0485152, 1.73479, -0.253422, -1.76992, -0.274494, -0.0556799, 0.00153614, -1.70184, -0.286787, 1.73772};
+		c_goal =  {0.38, 0.65, 0.21, 0, -0.85, 0, -0.527848, -0.0288182, 1.16444, -0.952929, -1.31305, 0.342119, -0.272648, 1.22228, -0.804083, -1.07655, -0.761231, 0.943446};	
 		Plan.set_environment(1);
 	}
 	else if (env == 2) {
-		c_start = {1.1, 1.1, 0, 1.24, -1.5708, 0, -0.79567, 0.60136, 0.43858, -0.74986, -1.0074, -0.092294};
-		c_goal = {-1.1, 1.35, -0.2, -1, -1.9, 0, 0.80875, 0.72363, -0.47891, -1.0484, 0.73278, 1.7491};
 		Plan.set_environment(2);
 	}
 
-	int mode = 2;
+	int mode = 1;
 	switch (mode) {
 	case 1: {
 		Plan.plan(c_start, c_goal, runtime, ptype, 0.6);

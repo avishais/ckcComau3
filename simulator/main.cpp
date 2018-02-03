@@ -892,7 +892,7 @@ void DisplayCB()
 		MRotZ(Mobs,0);
 		//MxM(R0,Mobs,Mobs);
 
-		Tobs[0] =  0*600;
+		Tobs[0] =  600;
 		Tobs[1] =  0;
 		Tobs[2] =  1300;
 
@@ -909,8 +909,8 @@ void DisplayCB()
 		MRotZ(Mobs,0);
 		//MxM(R0,Mobs,Mobs);
 
-		Tobs[0] =  -1000;
-		Tobs[1] =  500;
+		Tobs[0] =  -850;
+		Tobs[1] =  300;
 		Tobs[2] =  0;
 
 		if(visualize == 1 && withObs) {

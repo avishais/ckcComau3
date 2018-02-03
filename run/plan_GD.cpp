@@ -258,7 +258,7 @@ int main(int argn, char ** args) {
 
 	State c_start, c_goal;
 	if (env == 1) {
-		c_start = {0, 0.18, -0.48, 0, 0.29, 0, -0.00116218, 0.187689, -0.495204, 0.00387427, 0.312517, 0.00496777, 0.00116218, 0.187689, -0.495204, -0.00387427, 0.312517, -0.00496777};
+		c_start = {0.01, 0.66, -0.92, 0, 0.29, 0, 0.26018, -0.106253, 0.0485152, 1.73479, -0.253422, -1.76992, -0.274494, -0.0556799, 0.00153614, -1.70184, -0.286787, 1.73772};
 		c_goal =  {0.38, 0.65, 0.21, 0, -0.85, 0, -0.527848, -0.0288182, 1.16444, -0.952929, -1.31305, 0.342119, -0.272648, 1.22228, -0.804083, -1.07655, -0.761231, 0.943446};	
 		
 		Plan.set_environment(1);
@@ -268,7 +268,7 @@ int main(int argn, char ** args) {
 		Plan.set_environment(2);
 	}
 
-	int mode = 2;
+	int mode = 3;
 	switch (mode) {
 	case 1: {
 		// StateValidityChecker svc(1);
@@ -280,10 +280,12 @@ int main(int argn, char ** args) {
 		State c_goal =  {0.38, 0.65, 0.21, 0, -0.85, 0, -0.527848, -0.0288182, 1.16444, -0.952929, -1.31305, 0.342119, -0.272648, 1.22228, -0.804083, -1.07655, -0.761231, 0.943446};	
 		
 		// When initial pole is in x=0,y=0
-		State c_start = {0, 0.18, -0.48, 0, 0.29, 0, -0.00116218, 0.187689, -0.495204, 0.00387427, 0.312517, 0.00496777, 0.00116218, 0.187689, -0.495204, -0.00387427, 0.312517, -0.00496777};
+		//State c_start = {0, 0.18, -0.48, 0, 0.29, 0, -0.00116218, 0.187689, -0.495204, 0.00387427, 0.312517, 0.00496777, 0.00116218, 0.187689, -0.495204, -0.00387427, 0.312517, -0.00496777};
+		
+		State c_start = {0.01, 0.66, -0.92, 0, 0.29, 0, 0.26018, -0.106253, 0.0485152, 1.73479, -0.253422, -1.76992, -0.274494, -0.0556799, 0.00153614, -1.70184, -0.286787, 1.73772};
 		
 
-		Plan.plan(c_start, c_goal, runtime, ptype, 1.7);
+		Plan.plan(c_start, c_goal, runtime, ptype, 0.4);
 		// 	if (Plan.solved_bool)
 		// 		break;
 		// }
@@ -292,10 +294,10 @@ int main(int argn, char ** args) {
 	}
 	case 2 : { // Benchmark planning time with constant maximum step size
 		ofstream GD;
-		GD.open("./matlab/Benchmark_" + plannerName + "_GDno.txt", ios::app);
+		GD.open("./matlab/Benchmark_" + plannerName + "_GD.txt", ios::app);
 
-		for (int k = 0; k < 500; k++) {
-			Plan.plan(c_start, c_goal, runtime, ptype, 0.2); // CBiRRT
+		for (int k = 0; k < 100; k++) {
+			Plan.plan(c_start, c_goal, runtime, ptype, 0.8); // CBiRRT
 			//Plan.plan(c_start, c_goal, runtime, ptype, 0.6); // SBL
 
 			// Extract from perf file
@@ -313,12 +315,12 @@ int main(int argn, char ** args) {
 	case 3 : { // Benchmark maximum step size
 		ofstream GD;
 		if (env == 1)
-			GD.open("./matlab/Benchmark_" + plannerName + "_GD_rBno.txt", ios::app);
+			GD.open("./matlab/Benchmark_" + plannerName + "_GD_rB.txt", ios::app);
 
-			for (int k = 0; k < 10; k++) {
+		for (int k = 0; k < 100; k++) {
 
 			for (int j = 0; j < 5; j++) {
-				double maxStep = 0.2 + 0.4*j;
+				double maxStep = 1.2 + 0.2*j;
 
 				cout << "** Running GD iteration " << k << " with maximum step: " << maxStep << " **" << endl;
 
